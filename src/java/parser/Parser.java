@@ -96,10 +96,8 @@ public class Parser {
      */
     private void expect(TokenClass... expected) {
         for (TokenClass e : expected) {
-            if (e == token.tokenClass) {
-                Token cur = token;
+            if (e == token.tokenClass)
                 nextToken();
-            }
         }
         error(expected);
     }
