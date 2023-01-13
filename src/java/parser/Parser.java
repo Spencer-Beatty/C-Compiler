@@ -119,7 +119,7 @@ public class Parser {
     private void parseProgram() {
         parseIncludes();
 
-        while (!accept(TokenClass.EOF)) {
+        while (accept(TokenClass.STRUCT, TokenClass.INT, TokenClass.CHAR, TokenClass.VOID)) {
             if (token.tokenClass == TokenClass.STRUCT &&
                     lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
                     lookAhead(2).tokenClass == TokenClass.LBRA) {
@@ -127,6 +127,7 @@ public class Parser {
             }
             else {
                 // to be completed ...
+                nextToken(); // this line should be modified/removed
             }
         }
         // to be completed ...
@@ -144,6 +145,9 @@ public class Parser {
     }
 
     private void parseStructDecl(){
+        expect(TokenClass.STRUCT);
+        expect(TokenClass.IDENTIFIER);
+        expect(TokenClass.LBRA);
         // to be completed ...
     }
 
