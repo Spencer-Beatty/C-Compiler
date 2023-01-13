@@ -96,8 +96,10 @@ public class Parser {
      */
     private void expect(TokenClass... expected) {
         for (TokenClass e : expected) {
-            if (e == token.tokenClass)
+            if (e == token.tokenClass) {
                 nextToken();
+                return;
+            }
         }
         error(expected);
     }
@@ -106,10 +108,11 @@ public class Parser {
     * Returns true if the current token is equals to any of the expected ones.
     */
     private boolean accept(TokenClass... expected) {
-        boolean result = false;
-        for (TokenClass e : expected)
-            result |= (e == token.tokenClass);
-        return result;
+        for (TokenClass e : expected) {
+            if (e == token.tokenClass)
+                return true;
+        }
+        return false;
     }
 
 
