@@ -7,8 +7,13 @@ void main() {
   int next;
   int c;
   char t;
-
+  'a'
+  '\b'
+  'bb'
   // read n from the standard input
+  /*
+
+  */
   n = read_i();
   
   first = 0;
@@ -17,7 +22,7 @@ void main() {
   print_s((char*)"First ");
   print_i(n);
   print_s((char*)" terms of Fibonacci series are : ");
- 
+
   c = 0;
   while (c < n) {
     if ( c <= 1 )
