@@ -47,7 +47,7 @@ public class Tokeniser {
     private Token finishIdentifier(int line, int colunm, StringBuilder sb) throws IOException {
         // finish identifier is going to have to check for character following identifier is correct,
         char c = scanner.peek();
-        while(Character.isLetterOrDigit(c)){
+        while(Character.isLetterOrDigit(c) || c=='_'){
             sb.append(c);
             scanner.next();
             c = scanner.peek();
@@ -55,6 +55,38 @@ public class Tokeniser {
         return new Token(TokenClass.IDENTIFIER, sb.toString() ,line, colunm);
     }
 
+
+    private char validEscapeCharacter(char c) {
+        switch (c) {
+            case 't':
+                return '\t';
+            //insert tab here
+            case 'b':
+                return '\b';
+            //insert backspace here
+            case 'n':
+                return '\n';
+            //insert new line here
+            case 'r':
+                return '\r';
+            //insert carriage return here
+            case 'f':
+                return '\f';
+            //insert a form feed here
+            case '\'':
+                return '\'';
+            //insert a apostrophe here
+            case '"':
+                return '\"';
+            //insert a quotation
+            case '\\':
+                return '\\';
+            //insert a backslash
+            case '0':
+                return '\0';
+        }
+        return '1';
+    }
     /*
      * To be completed
      */
@@ -80,10 +112,10 @@ public class Tokeniser {
             //keywords: if, else, while, return,
             // struct, sizeof
             StringBuilder sb = new StringBuilder();
+            sb.append(c);
             switch (c) {
                 case 'i':
                     // check for int, if, or other
-                    sb.append(c);
                     c = scanner.peek();
 
                     if (c == 'n') {
@@ -97,17 +129,11 @@ public class Tokeniser {
                             sb.append(c);
                             c = scanner.peek();
 
-                            if (Character.isLetterOrDigit(c)) {
-                                // then this is an identifier
-                                return finishIdentifier(line, column, sb);
-                            } else {
+                            if (! Character.isLetterOrDigit(c)) {
                                 // if there is not another Character or letter or digit, then we return
                                 // an int, this allows for stuff like int[] and int
                                 return new Token(TokenClass.INT, line, column);
                             }
-                        } else {
-                            //catches "in" followed by something
-                            return finishIdentifier(line, column, sb);
                         }
                     } else if (c == 'f') {
                         // expecting "if" or identifier
@@ -115,19 +141,14 @@ public class Tokeniser {
                         sb.append(c);
                         c = scanner.peek();
 
-                        if (Character.isLetterOrDigit(c)) {
-                            return finishIdentifier(line, column, sb);
-                        } else {
+                        if (! Character.isLetterOrDigit(c)) {
                             return new Token(TokenClass.IF, line, column);
                         }
-                    } else {
-                        // catches letter "i" followed by whitespace or symbol
-                        // let finishIdentifier deal with problems
-                        return finishIdentifier(line, column, sb);
                     }
+                    //if nothing encountered call finish identifier
+                    return finishIdentifier(line, column, sb);
                 case 'v':
                     // check for void, or other
-                    sb.append(c);
                     c = scanner.peek();
                     if (c == 'o') {
                         c = scanner.next();
@@ -141,23 +162,16 @@ public class Tokeniser {
                                 c = scanner.next();
                                 sb.append(c);
                                 c = scanner.peek();
-                                if (Character.isLetterOrDigit(c)) {
-                                    return finishIdentifier(line, column, sb);
-                                } else {
+                                if (! Character.isLetterOrDigit(c)) {
                                     return new Token(TokenClass.VOID, line, column);
                                 }
-                            } else {
-                                return finishIdentifier(line, column, sb);
                             }
-                        } else {
-                            return finishIdentifier(line, column, sb);
                         }
-                    } else {
-                        return finishIdentifier(line, column, sb);
                     }
+
+                    return finishIdentifier(line, column, sb);
                 case 'c':
                     //check for char, or other
-                    sb.append(c);
                     c = scanner.peek();
                     if (c == 'h') {
                         c = scanner.next();
@@ -171,23 +185,15 @@ public class Tokeniser {
                                 c = scanner.next();
                                 sb.append(c);
                                 c = scanner.peek();
-                                if (Character.isLetterOrDigit(c)) {
-                                    return finishIdentifier(line, column, sb);
-                                } else {
+                                if (! Character.isLetterOrDigit(c)) {
                                     return new Token(TokenClass.CHAR, line, column);
                                 }
-                            } else {
-                                return finishIdentifier(line, column, sb);
                             }
-                        } else {
-                            return finishIdentifier(line, column, sb);
                         }
-                    } else {
-                        return finishIdentifier(line, column, sb);
                     }
+                    return finishIdentifier(line, column, sb);
                 case 'e':
                     //check for char, or other
-                    sb.append(c);
                     c = scanner.peek();
                     if (c == 'l') {
                         c = scanner.next();
@@ -201,23 +207,16 @@ public class Tokeniser {
                                 c = scanner.next();
                                 sb.append(c);
                                 c = scanner.peek();
-                                if (Character.isLetterOrDigit(c)) {
-                                    return finishIdentifier(line, column, sb);
-                                } else {
+                                if (! Character.isLetterOrDigit(c)) {
                                     return new Token(TokenClass.ELSE, line, column);
                                 }
-                            } else {
-                                return finishIdentifier(line, column, sb);
                             }
-                        } else {
-                            return finishIdentifier(line, column, sb);
                         }
-                    } else {
-                        return finishIdentifier(line, column, sb);
                     }
+                    return finishIdentifier(line, column, sb);
+
                 case 'w':
                     //check for while, or other
-                    sb.append(c);
                     c = scanner.peek();
                     if (c == 'h') {
                         c = scanner.next();
@@ -235,26 +234,17 @@ public class Tokeniser {
                                     c = scanner.next();
                                     sb.append(c);
                                     c = scanner.peek();
-                                    if (Character.isLetterOrDigit(c)) {
-                                        return finishIdentifier(line, column, sb);
-                                    } else {
+                                    if (! Character.isLetterOrDigit(c)) {
                                         return new Token(TokenClass.WHILE, line, column);
                                     }
-                                } else {
-                                    return finishIdentifier(line, column, sb);
                                 }
-                            } else {
-                                return finishIdentifier(line, column, sb);
                             }
-                        } else {
-                            return finishIdentifier(line, column, sb);
                         }
-                    } else {
-                        return finishIdentifier(line, column, sb);
                     }
+                    return finishIdentifier(line, column, sb);
+
                 case 'r':
                     //check for return, or other
-                    sb.append(c);
                     c = scanner.peek();
                     if (c == 'e') {
                         c = scanner.next();
@@ -276,29 +266,17 @@ public class Tokeniser {
                                         c = scanner.next();
                                         sb.append(c);
                                         c = scanner.peek();
-                                        if (Character.isLetterOrDigit(c)) {
-                                            return finishIdentifier(line, column, sb);
-                                        } else {
+                                        if (! Character.isLetterOrDigit(c)) {
                                             return new Token(TokenClass.RETURN, line, column);
                                         }
-                                    } else {
-                                        return finishIdentifier(line, column, sb);
                                     }
-                                } else {
-                                    return finishIdentifier(line, column, sb);
                                 }
-                            } else {
-                                return finishIdentifier(line, column, sb);
                             }
-                        } else {
-                            return finishIdentifier(line, column, sb);
                         }
-                    } else {
-                        return finishIdentifier(line, column, sb);
                     }
+                    return finishIdentifier(line, column, sb);
                 case 's':
                     //check for struct sizeof, or other
-                    sb.append(c);
                     c = scanner.peek();
                     if (c == 't') {
                         c = scanner.next();
@@ -320,22 +298,12 @@ public class Tokeniser {
                                         c = scanner.next();
                                         sb.append(c);
                                         c = scanner.peek();
-                                        if (Character.isLetterOrDigit(c)) {
-                                            return finishIdentifier(line, column, sb);
-                                        } else {
+                                        if (! Character.isLetterOrDigit(c)) {
                                             return new Token(TokenClass.STRUCT, line, column);
                                         }
-                                    } else {
-                                        return finishIdentifier(line, column, sb);
                                     }
-                                } else {
-                                    return finishIdentifier(line, column, sb);
                                 }
-                            } else {
-                                return finishIdentifier(line, column, sb);
                             }
-                        } else {
-                            return finishIdentifier(line, column, sb);
                         }
                     } else if (c == 'i') {
                         // check for sizeof
@@ -358,36 +326,224 @@ public class Tokeniser {
                                         c = scanner.next();
                                         sb.append(c);
                                         c = scanner.peek();
-                                        if (Character.isLetterOrDigit(c)) {
-                                            return finishIdentifier(line, column, sb);
-                                        } else {
+                                        if (!Character.isLetterOrDigit(c)) {
                                             return new Token(TokenClass.STRUCT, line, column);
                                         }
-                                    } else {
-                                        return finishIdentifier(line, column, sb);
                                     }
-                                } else {
-                                    return finishIdentifier(line, column, sb);
                                 }
-                            } else {
-                                return finishIdentifier(line, column, sb);
                             }
-                        } else {
-                            return finishIdentifier(line, column, sb);
                         }
-                    }else{
-                        return finishIdentifier(line, column, sb);
                     }
+                    return finishIdentifier(line, column, sb);
+
 
                 default:
-                    sb.append(c);
+
                     return finishIdentifier(line, column, sb);
 
 
             }
 
         }
-        // ... to be completed
+
+        // deals with int literals, note figure out if 001 should be accepted
+        if (Character.isDigit(c)){
+            StringBuilder sb = new StringBuilder();
+            sb.append(c);
+            c = scanner.peek();
+            while(Character.isDigit(c)){
+                c = scanner.next();
+                sb.append(c);
+            }
+            return new Token(TokenClass.INT_LITERAL,sb.toString(), line, column);
+        }
+        //start for symbols
+        // will deal with:
+        // = ( ) { } [ ] ; ,
+        // && ||
+        // == != < <= > >=
+        // - * / % &
+        // .
+        // #include
+        // /* and //
+        switch(c){
+            case '=':
+                c = scanner.peek();
+                if(c == '='){
+                    scanner.next();
+                    return new Token(TokenClass.EQ, line, column);
+                }else{
+                    return new Token(TokenClass.ASSIGN, line, column);
+                }
+            case '(':
+                return new Token(TokenClass.LPAR, line, column);
+            case ')':
+                return new Token(TokenClass.RPAR, line, column);
+            case '{':
+                return new Token(TokenClass.LBRA, line, column);
+            case '}':
+                return new Token(TokenClass.RBRA, line, column);
+            case '[':
+                return new Token(TokenClass.LSBR, line, column);
+            case ']':
+                return new Token(TokenClass.RSBR, line, column);
+            case ';':
+                return new Token(TokenClass.SC, line, column);
+            case ',':
+                return new Token(TokenClass.COMMA, line, column);
+            case '&':
+                c = scanner.peek();
+                if(c == '&'){
+                    scanner.next();
+                    return new Token(TokenClass.LOGAND, line, column);
+                }
+                break;
+            case '|':
+                c = scanner.peek();
+                if(c == '|'){
+                    scanner.next();
+                    return new Token(TokenClass.LOGOR, line, column);
+                }
+                break;
+            case '!':
+                c = scanner.peek();
+                if(c == '='){
+                    scanner.next();
+                    return new Token(TokenClass.NE, line, column);
+                }
+                break;
+            case '<':
+                c = scanner.peek();
+                if(c == '='){
+                    scanner.next();
+                    return new Token(TokenClass.LE, line, column);
+                }
+                return new Token(TokenClass.LT, line, column);
+            case '>':
+                c = scanner.peek();
+                if(c == '='){
+                    scanner.next();
+                    return new Token(TokenClass.GE, line, column);
+                }
+                return new Token(TokenClass.GT, line, column);
+            case '-':
+                return new Token(TokenClass.MINUS, line, column);
+            case '*':
+                return new Token(TokenClass.ASTERIX,line,column);
+            case '/':
+                c = scanner.peek();
+                if(c == '/'){
+                    // line comment
+                    while(scanner.getLine() == line && scanner.hasNext()){
+                        scanner.next();
+                    }
+                    return next();
+                }else if(c == '*'){
+                    //block comment start, search for end
+                    while(scanner.hasNext()){
+                            c = scanner.next();
+                            if (c == '*') {
+                                c = scanner.next();
+                                if (c == '/') {
+                                    scanner.next();
+                                    return next();
+                                }
+                            }
+                    }
+                    break;
+                }else{
+                    //division
+                    return new Token(TokenClass.DIV,line,column);
+                }
+            case '.':
+                return new Token(TokenClass.DOT,line,column);
+
+            case '#':
+                c = scanner.next();
+                if (c == 'i') {
+                    c = scanner.next();
+                    if (c == 'n') {
+                        c = scanner.next();
+                        if (c == 'c') {
+                            c = scanner.next();
+                            if (c == 'l') {
+                                c = scanner.next();
+                                if (c == 'u') {
+                                    c = scanner.next();
+                                    if (c == 'd') {
+                                        c = scanner.next();
+                                        if (c == 'e') {
+                                            c = scanner.peek();
+                                            if (Character.isWhitespace(c)) {
+                                                return new Token(TokenClass.INCLUDE, line, column);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+        //string literals here
+        if (c == '\"'){
+            StringBuilder sb = new StringBuilder();
+            c = scanner.next();
+            while(c != '\"' && scanner.hasNext()){
+                if(c=='\\'){
+                    c = scanner.next();
+                    if(validEscapeCharacter(c) == '1'){
+                        error('\\',line,column);
+                        error(c, line, column);
+                    }else{
+                        sb.append(validEscapeCharacter(c));
+
+                    }
+                }else{
+                    sb.append(c);
+                }
+
+                c = scanner.next();
+            }
+            if(c!='\"'){
+                return new Token(TokenClass.INVALID, line, column);
+            }
+            return new Token(TokenClass.STRING_LITERAL,sb.toString(), line, column);
+
+        }
+
+        //char literals here
+        if (c == '\''){
+            StringBuilder sb = new StringBuilder();
+            c = scanner.next();
+            if(c == '\\'){
+                //check for valid escape character
+                c = scanner.next();
+                if(validEscapeCharacter(c) == '1'){
+                    error('\\',line,column);
+                    error(c, line, column);
+                }else if(scanner.next() == '\''){
+                        sb.append(validEscapeCharacter(c));
+                        return new Token(TokenClass.CHAR_LITERAL, sb.toString(), line, column);
+                }
+            }else if(Character.isDefined(c)){
+                sb.append(c);
+                if(scanner.next() == '\''){
+                    return new Token(TokenClass.CHAR_LITERAL, sb.toString(), line, column);
+                }
+            }
+            error(c, line, column);
+            c = scanner.next();
+            while(c!='\'' && scanner.hasNext()){
+                c = scanner.next();
+            }
+            return new Token(TokenClass.INVALID, line, column);
+
+        }
 
 
         // if we reach this point, it means we did not recognise a valid token
