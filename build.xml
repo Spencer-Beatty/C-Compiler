@@ -24,8 +24,8 @@
   <property name="bin" location="bin"/>
   <property environment="env"/>
   <property name="debuglevel" value="source,lines,vars"/>
-  <property name="target" value="11"/>
-  <property name="source" value="11"/>
+  <property name="target" value="17"/>
+  <property name="source" value="17"/>
 
   <target name="init">
     <tstamp/>

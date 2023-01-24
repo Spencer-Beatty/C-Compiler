@@ -48,10 +48,10 @@ You can test if you already have Java development kit installed by typing:
 ```
 javac -version
 ``` 
-If this returns a version equals to, or higher than 11, then you are good to go.
-Otherwise, follow the link below for instructions on how to install manually the JDK 11 (feel free to install any newer version if you wish to):
+If this returns a version equals to, or higher than 17, then you are good to go.
+Otherwise, follow the link below for instructions on how to install manually the JDK 17 (feel free to install any newer version if you wish to):
 
-* https://docs.oracle.com/en/java/javase/11/install/overview-jdk-installation.html
+* https://docs.oracle.com/en/java/javase/17/install/overview-jdk-installation.html
 
 ## Ant ##
 
@@ -80,7 +80,7 @@ If this is not the case, you can follow this link with instructions on how to in
 
 # Marking #
 
-The marking will be done using an automated test suite on a Linux machine using Java 11.
+The marking will be done using an automated test suite on a Linux machine using Java 17.
 Please note that you are not allowed to modify the `Main.java` file which is the main entry point to the compiler.
 The `Main.java` will be replaced by our own when we run the automarker.
 Also make sure that the build script provided remains unchanged so that your project can be built on our machine.
@@ -290,8 +290,8 @@ Note that to ensure that you are not using any third party libraries, we will re
 scalaVersion := "2.11.12"
 
 javacOptions ++= Seq(
-  "-source", "11",
-  "-target", "11"
+  "-source", "17",
+  "-target", "17"
 )
 
 compileOrder := CompileOrder.Mixed
