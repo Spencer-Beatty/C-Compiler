@@ -397,7 +397,7 @@ public class Tokeniser {
                     scanner.next();
                     return new Token(TokenClass.LOGAND, line, column);
                 }
-                break;
+                return new Token(TokenClass.AND,line,column);
             case '|':
                 c = scanner.peek();
                 if(c == '|'){
@@ -457,7 +457,8 @@ public class Tokeniser {
                 }
             case '.':
                 return new Token(TokenClass.DOT,line,column);
-
+            case '%':
+                return new Token(TokenClass.REM,line,column);
             case '#':
                 c = scanner.next();
                 if (c == 'i') {
