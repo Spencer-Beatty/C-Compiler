@@ -359,6 +359,7 @@ public class Tokeniser {
         }
         //start for symbols
         // will deal with:
+        // _ underscore to start identifier
         // = ( ) { } [ ] ; ,
         // && ||
         // == != < <= > >=
@@ -367,6 +368,10 @@ public class Tokeniser {
         // #include
         // /* and //
         switch(c){
+            case '_':
+                StringBuilder sb = new StringBuilder();
+                sb.append(c);
+                return finishIdentifier(line,column,sb);
             case '=':
                 c = scanner.peek();
                 if(c == '='){
