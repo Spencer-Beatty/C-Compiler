@@ -47,7 +47,8 @@
   <target depends="init" name="build-project">
     <echo message="${ant.project.name}: ${ant.file}"/>
     <javac debug="true" excludes="test/**" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
-      <src path="src"/>      
+      <src path="src"/>
+      <compilerarg value="--enable-preview" />
     </javac>
   </target>
   <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
