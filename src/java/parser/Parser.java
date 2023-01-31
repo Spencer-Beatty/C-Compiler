@@ -11,6 +11,7 @@ import java.util.Queue;
 
 /**
  * @author cdubach
+ * @author spencerbeatty 
  */
 public class Parser {
 
@@ -117,21 +118,37 @@ public class Parser {
 
 
     private void parseProgram() {
+        // (Include)*
         parseIncludes();
 
+        // (structdecl | vardecl | fundecl)*
         while (accept(TokenClass.STRUCT, TokenClass.INT, TokenClass.CHAR, TokenClass.VOID)) {
+            // structdecl
             if (token.tokenClass == TokenClass.STRUCT &&
                     lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
                     lookAhead(2).tokenClass == TokenClass.LBRA) {
                 parseStructDecl();
+
             }
-            else {
-                // to be completed ...
-                nextToken(); // this line should be modified/removed
+            // fundecl where type != struct
+            else if(lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
+                    lookAhead(2).tokenClass == TokenClass.LPAR) {
+                parseFunDecl();
+            // fundecl where type = structtype (struct ident) followed by ident
+            }else if(token.tokenClass==TokenClass.STRUCT &&
+                    lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
+                    lookAhead(2).tokenClass == TokenClass.IDENTIFIER) {
+                parseFunDecl();
+            // vardecl
+            }else{
+                parseVarDecl();
             }
         }
+
         // to be completed ...
 
+
+        // EOF
         expect(TokenClass.EOF);
     }
 
@@ -144,12 +161,144 @@ public class Parser {
         }
     }
 
-    private void parseStructDecl(){
-        expect(TokenClass.STRUCT);
-        expect(TokenClass.IDENTIFIER);
-        expect(TokenClass.LBRA);
-        // to be completed ...
+    private void parseStructType(){
+        // checks struct twice, but is ok because accept does not consume
+        // and will prevent calling parse struct type at the wrong time.
+        if(accept(TokenClass.STRUCT)) {
+            nextToken();
+            expect(TokenClass.IDENTIFIER);
+
+        }else{
+            error(TokenClass.STRUCT);
+        }
+        return;
+
     }
 
+    private void parseStructDecl(){
+        if(accept(TokenClass.STRUCT)){
+            parseStructType();
+
+            expect(TokenClass.LBRA);
+            // at least 1 var decl
+            if(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
+                parseVarDecl();
+                while(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
+                    parseVarDecl();
+                }
+            }
+            expect(TokenClass.RBRA);
+            return;
+            // to be completed ...
+        }
+    }
+
+    // type IDENT "(" params ")" block
+    private void parseFunDecl(){
+        parseType();
+        expect(TokenClass.IDENTIFIER);
+        expect(TokenClass.LPAR);
+        parseExp();
+        expect(TokenClass.RPAR);
+        if(accept(TokenClass.LBRA)){
+            parseBlock();
+        }else{
+            error(TokenClass.LBRA);
+        }
+        return;
+
+        
+    }
+
+    private void parseVarDecl(){
+
+        parseType();
+        expect(TokenClass.IDENTIFIER);
+        while(accept(TokenClass.LSBR)){
+            // expect [ INT_LITERAL ]
+            nextToken();
+            expect(TokenClass.INT_LITERAL);
+            expect(TokenClass.RSBR);
+        }
+        expect(TokenClass.SC);
+        return;
+
+    }
+
+    private void parseType(){
+        if(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID)){
+            nextToken();
+        }else if(accept(TokenClass.STRUCT)){
+            parseStructType();
+        }
+        else{
+            error(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT);
+            return;
+        }
+        while(accept(TokenClass.ASTERIX)){
+            nextToken();
+        }
+        return;
+    }
+
+    private void parseBlock(){
+        // "{" (vardecl)* (stmt)* "}"
+        if(accept(TokenClass.LBRA)) {
+            nextToken();
+            // if starts with type then must be a var decl
+            while (accept(TokenClass.INT,TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT)) {
+                parseVarDecl();
+            }
+
+            while(! accept(TokenClass.RBRA)){
+                parseStmt();
+            }
+
+            // if we reach here we have found the '}'
+            expect(TokenClass.RBRA);
+            return;
+        }
+    }
+
+    private void parseStmt(){
+        if(accept(TokenClass.LBRA)){
+            parseBlock();
+        }else if(accept(TokenClass.WHILE)){
+            nextToken();
+            expect(TokenClass.LPAR);
+            parseExp();
+            expect(TokenClass.RPAR);
+            parseStmt();
+        }else if(accept(TokenClass.IF)){
+            nextToken();
+            expect(TokenClass.LPAR);
+            parseExp();
+            expect(TokenClass.RPAR);
+            parseStmt();
+            if(accept(TokenClass.ELSE)){
+                nextToken();
+                expect(TokenClass.LPAR);
+                parseExp();
+                expect(TokenClass.RPAR);
+                parseStmt();
+            }
+        }else if(accept(TokenClass.RETURN)){
+            nextToken();
+            if(accept(TokenClass.SC)){
+                nextToken();
+            }else{
+                parseExp();
+                expect(TokenClass.SC);
+            }
+        }else{
+            parseExp();
+            expect(TokenClass.SC);
+        }
+        return;
+    }
+
+    private void parseExp(){
+        return;
+    }
     // to be completed ...
 }
