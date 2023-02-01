@@ -170,6 +170,7 @@ public class Parser {
 
         }else{
             error(TokenClass.STRUCT);
+            nextToken();
         }
         return;
 
@@ -198,16 +199,31 @@ public class Parser {
         parseType();
         expect(TokenClass.IDENTIFIER);
         expect(TokenClass.LPAR);
-        parseExp();
+        parseParams();
         expect(TokenClass.RPAR);
         if(accept(TokenClass.LBRA)){
             parseBlock();
         }else{
+            nextToken();
             error(TokenClass.LBRA);
         }
         return;
 
         
+    }
+
+    private void parseParams(){
+        if (accept(TokenClass.RPAR)){
+            return;
+        }else{
+            parseType();
+            expect(TokenClass.IDENTIFIER);
+        }
+        while(! accept(TokenClass.RPAR) ){
+            parseType();
+            expect(TokenClass.IDENTIFIER);
+        }
+        return;
     }
 
     private void parseVarDecl(){
@@ -250,11 +266,12 @@ public class Parser {
                 parseVarDecl();
             }
 
-            while(! accept(TokenClass.RBRA)){
+            while(! accept(TokenClass.RBRA,TokenClass.EOF)){
+                // need to make sure that parseStmt always consumes a character
                 parseStmt();
             }
 
-            // if we reach here we have found the '}'
+            // if we reach here we have found the '}' or EOF
             expect(TokenClass.RBRA);
             return;
         }
@@ -298,7 +315,110 @@ public class Parser {
     }
 
     private void parseExp(){
+        if(accept(TokenClass.LPAR)){
+            // "(" type ")" exp   || "(" exp ")"
+            nextToken(); // consume (
+            if(accept(TokenClass.INT,TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT)){
+                // ( type ) exp
+                parseType();
+                expect(TokenClass.RPAR);
+                parseExp();
+            }else{
+                // ( exp )
+                parseExp();
+                expect(TokenClass.RPAR);
+            }
+
+
+        }else if(accept(TokenClass.IDENTIFIER)){
+            // not consuming here in case of function
+            if(lookAhead(1).tokenClass == TokenClass.LPAR){
+                //function call
+                parseFuncCall();
+            }else{
+                // not function so we consume identifier
+                nextToken();
+            }
+
+        }else if(accept(TokenClass.PLUS, TokenClass.MINUS)){
+            // expecting (+ | - ) exp
+            // need to watch out for messing this up with binary expression
+            // maybe this is the same as binary expression though
+            nextToken();
+            parseExp();
+
+        }else if(accept(TokenClass.STRING_LITERAL,TokenClass.CHAR_LITERAL,TokenClass.INT_LITERAL)){
+            //nothing else to do here, terminal state
+            nextToken();
+
+        }else if(accept(TokenClass.ASTERIX)){
+            //similar to (+ | -) consume the token and then
+            // look for proceeding exp
+            nextToken();
+            parseExp();
+
+        }else if(accept(TokenClass.AND)){
+            nextToken();
+            parseExp();
+
+        }else if(accept(TokenClass.SIZEOF)){
+            //"sizeof" "(" type ")"
+            nextToken();
+            expect(TokenClass.LPAR);
+            parseType();
+            expect(TokenClass.RPAR);
+
+
+        }else{
+            //raise errors
+
+        }
+
+        if(accept(TokenClass.ASSIGN)) {
+            // deal with assign here
+            // problem arises that we require = after exp,
+            // solution use parseAssignExp
+            parseAssignExp();
+        }
+        if(false){
+            // deal with array, bin, and field
+        }
         return;
+    }
+
+    private void parseAssignExp(){
+        // just to make sure check again
+        if(accept(TokenClass.ASSIGN)){
+            nextToken();
+            parseExp();
+        }else{
+            error(TokenClass.ASSIGN);
+            nextToken();
+        }
+    }
+    private void parseFuncCall(){
+        // IDENT "(" [ exp ("," exp)* ] ")"
+        expect(TokenClass.IDENTIFIER);
+        expect(TokenClass.LPAR);
+        //consume initial [ exp ]
+        if(! accept(TokenClass.RPAR)){
+            parseExp();
+            while(! accept(TokenClass.RPAR, TokenClass.EOF)){
+                //  [ ("," exp)* ]
+                if(accept(TokenClass.COMMA)){
+                    nextToken();
+                    parseExp();
+                }else{
+                    error(TokenClass.COMMA);
+                    nextToken();
+                }
+            }
+        }
+
+        //consume the LPAR or raise error is EOF
+        expect(TokenClass.RPAR);
+        return;
+
     }
     // to be completed ...
 }

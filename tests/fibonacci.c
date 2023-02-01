@@ -7,9 +7,7 @@ void main() {
   int next;
   int c;
   char t;
-  'a'
-  '\b'
-  'bb'
+
   // read n from the standard input
   /*
 
