@@ -294,9 +294,6 @@ public class Parser {
             parseStmt();
             if(accept(TokenClass.ELSE)){
                 nextToken();
-                expect(TokenClass.LPAR);
-                parseExp();
-                expect(TokenClass.RPAR);
                 parseStmt();
             }
         }else if(accept(TokenClass.RETURN)){
@@ -371,18 +368,36 @@ public class Parser {
 
         }else{
             //raise errors
-
+            // no expression was reached.
+            nextToken();
+            error();
         }
 
+        // this ensures that an expression is finished before coming into this statement
         if(accept(TokenClass.ASSIGN)) {
             // deal with assign here
             // problem arises that we require = after exp,
             // solution use parseAssignExp
             parseAssignExp();
         }
-        if(false){
+        else if(accept(TokenClass.LT,TokenClass.GT,TokenClass.LE,TokenClass.GE,TokenClass.NE,
+                TokenClass.EQ,TokenClass.PLUS,TokenClass.MINUS,TokenClass.DIV,TokenClass.ASTERIX,
+                TokenClass.REM,TokenClass.LOGOR,TokenClass.LOGAND)){
+              nextToken();
+              parseExp();
+            // exp (">" | "<" | ">=" | "<=" | "!=" | "==" | "+" | "-" | "/" | "*" | "%" | "||" | "&&") exp  # binary operators
+        }else if(accept(TokenClass.LBRA)){
             // deal with array, bin, and field
+            //arrayaccess  ::= exp "[" exp "]"                  # array access
+            //fieldaccess  ::= exp "." IDENT
+            parseExp();
+            expect(TokenClass.RBRA);
+
+        }else if(accept(TokenClass.DOT)){
+            nextToken();
+            expect(TokenClass.IDENTIFIER);
         }
+
         return;
     }
 
