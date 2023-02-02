@@ -1,0 +1,111 @@
+pid_t placeholder = -1;
+pid_t lastCall;
+int jobNumber = 0;
+//preDefined arbitrary number for amount of background tasks.
+jobListSize 64
+int jobList[jobListSize];
+int a__b = 0;
+
+// controller for control z
+static void sigHandler(int sig){
+
+    signal(sig,SIG_IGN);
+}
+//controller for Control c
+static void SIGINT_handler(int sig){
+    kill(sig,lastCall);
+
+
+}
+//function to alter the number contained in global variable jobNumber
+void deUpdate(int *bar){
+    int t = jobNumber-1;
+    *bar = t;
+}
+//doesn't actually remove a job just marks a job ready for removal so that reSort can clean up
+static void removeJob(int num){
+    int *p = jobList;
+    if(num==0){
+        *(p+num) = -1;
+    }else{
+        *(p+num) = -1;
+    }
+
+    deUpdate(&jobNumber);
+}
+
+//removes jobs marked by removeJob by sliding down the rest of the array
+void reSort(int i){
+int *p = jobList;
+    for(int j =i+1;j<jobNumber;j++){
+        *(p+j-1)= *(p+j);
+    }
+
+
+}
+//searches for a pid that has terminated and calls removeJob and reSort
+void searchStatus(int pid){
+    for(int i = 0;i<jobNumber;i++){
+        if((jobList[i]==pid)){
+            removeJob(i);
+            reSort(i);
+        }
+    }
+}
+
+//Controller for dead child signals
+static void SIGCHLD_handler(int sig){
+    pid_t pid;
+    if((pid = waitpid(-1, NULL, WNOHANG)) != -1){
+        searchStatus(pid);
+}
+
+}
+//built in command cd
+static void cdCommand(char* address){
+
+    if(chdir(address)!=0){
+        perror("the address entered does not compute\n");
+    }
+}
+//built in command pwd
+static void pwdCommand(){
+    char cwd[256];
+    if(getcwd(cwd,sizeof(cwd))==NULL){
+    perror("pwd error");
+        }else{
+            printf("pwd : %s\n",cwd);
+        }
+    }
+    //built in command exit
+    static void exitCommand(){
+        for(int i = 0;i<jobNumber;i++){
+            kill(jobList[i],SIGKILL);
+        }
+        exit(1);
+    }
+    //built in command fg
+    static void fgCommand(char* argToBring){
+        int i = atoi(argToBring);
+        pid_t waiter = waitpid(jobList[i],NULL,WUNTRACED);
+    }
+    //built in command jobs
+    static void jobsCommand(){
+        //displays the jobs that are currently going on.
+        if(jobNumber==0){
+            printf("no jobs currently going on\n");
+        }else{
+            int i=0;
+            printf("JobsList:\n");
+
+            printf("Current Number of Jobs: %d\n",jobNumber);
+            for(int i = 0; i<jobNumber;i++){
+                printf("jobNumber: %d, pid: %d\n",i,jobList[i]);
+            }
+        }
+    }
+    //method to redirect output, changes output stream to the requested file
+    static void redirectOutput(char* argv){
+
+
+    }

@@ -327,7 +327,7 @@ public class Tokeniser {
                                         sb.append(c);
                                         c = scanner.peek();
                                         if (!Character.isLetterOrDigit(c)) {
-                                            return new Token(TokenClass.STRUCT, line, column);
+                                            return new Token(TokenClass.SIZEOF, line, column);
                                         }
                                     }
                                 }

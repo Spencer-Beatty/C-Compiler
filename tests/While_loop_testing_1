@@ -1,0 +1,36 @@
+
+
+// valid only
+struct a { int a; };
+
+void main(){
+    //array access problem
+
+
+    a = exp_test( ident, 1, -1, +1, +ident,-ident, 'c', "ce", 2+ 2, 'c'+2, a[2], b.a, *a,&-a,sizeof(int));
+
+
+    // statement waterfall
+
+
+    {}
+    {}
+    while( 1 ) if ( 1 ) if ( 1 ) return; else  return; else while ( 1 ) return 1 = 2 + 3 + 4 = 5 + 6 ;
+
+
+    2 > 3 < 5 >= 5 == 2 + 3 + 4 + 5 + +5 - +5 - -----5;
+
+    2 --- 3;
+    2 -+-+-(3 + 3);
+
+    (int) 1;
+    (int) (int) (int) 1 = 4;
+
+    (int) 1 = 4;
+
+    {{{{{1;}}}}}
+}
+
+void bane(int a, int b){
+
+}

@@ -1,0 +1,16 @@
+void prog(){
+
+int x;
+int* z;
+&x = z;
+
+}
+int foo (int *y) {
+return *y;
+}
+
+int main () {
+*z = 1;
+printf ("%d\n", foo(&x));
+return 0;
+}

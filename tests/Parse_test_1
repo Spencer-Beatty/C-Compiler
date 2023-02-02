@@ -1,0 +1,10 @@
+// pass cases
+struct fir { int a; }
+struct fir2 { char b[1][2]; }
+char c[2][4][1][1][1][1];
+int d;
+int e****;
+
+
+
+

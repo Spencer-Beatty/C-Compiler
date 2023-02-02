@@ -1,0 +1,60 @@
+/*
+things to test in this "suite"
+
+basic assignments
+exp "=" exp
+
+a = 1
+1 = 2
+
+
+
+*/
+
+//positive cases
+void assign(){
+
+    // basic single expressions
+    a = 1;
+    b = 1;
+    a = b;
+   'a' = b;
+
+
+    // multiple expressions
+    a = b = c = 1;
+    a = 'c' = 1;
+    1 = a = b;
+
+    //broad expresions on each side of statement
+    name = ("myname");
+    name = (int) a;
+    name = function( 1, 2, 3, 4, 5, 6, 7);
+    name = function( 1, 2, 3, 4, 5, 6, 7) + 2;
+    (a = 1) = b + 2;
+
+
+}
+
+void arrayAccess(){
+    return 1;
+
+}
+
+void whileLoops(){
+    while(i > 5){
+        if(i<5){
+            print(1);
+        }else{
+            return 1;
+        }
+
+        if(i == 5){
+            return 5;
+        }else while(i > 5) while(i < 5) while(i < 5) while(i > 5) while (i< 5) {
+            return 5;
+        }
+    }
+
+}
+

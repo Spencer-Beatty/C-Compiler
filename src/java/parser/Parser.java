@@ -187,8 +187,12 @@ public class Parser {
                 while(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
                     parseVarDecl();
                 }
+            }else{
+                error(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT);
+                nextToken();
             }
             expect(TokenClass.RBRA);
+            expect(TokenClass.SC);
             return;
             // to be completed ...
         }
@@ -204,8 +208,8 @@ public class Parser {
         if(accept(TokenClass.LBRA)){
             parseBlock();
         }else{
-            nextToken();
             error(TokenClass.LBRA);
+            nextToken();
         }
         return;
 
@@ -214,12 +218,14 @@ public class Parser {
 
     private void parseParams(){
         if (accept(TokenClass.RPAR)){
+            // consume of RPAR dealt with after returning
             return;
         }else{
             parseType();
             expect(TokenClass.IDENTIFIER);
         }
         while(! accept(TokenClass.RPAR) ){
+            expect(TokenClass.COMMA);
             parseType();
             expect(TokenClass.IDENTIFIER);
         }
@@ -249,6 +255,7 @@ public class Parser {
         }
         else{
             error(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT);
+            nextToken(); // need to consusme otherwise get stuck in loop potentially
             return;
         }
         while(accept(TokenClass.ASTERIX)){
@@ -369,8 +376,9 @@ public class Parser {
         }else{
             //raise errors
             // no expression was reached.
-            nextToken();
             error();
+            nextToken();
+
         }
 
         // this ensures that an expression is finished before coming into this statement
@@ -386,12 +394,13 @@ public class Parser {
               nextToken();
               parseExp();
             // exp (">" | "<" | ">=" | "<=" | "!=" | "==" | "+" | "-" | "/" | "*" | "%" | "||" | "&&") exp  # binary operators
-        }else if(accept(TokenClass.LBRA)){
+        }else if(accept(TokenClass.LSBR)){
+            nextToken();
             // deal with array, bin, and field
             //arrayaccess  ::= exp "[" exp "]"                  # array access
             //fieldaccess  ::= exp "." IDENT
             parseExp();
-            expect(TokenClass.RBRA);
+            expect(TokenClass.RSBR);
 
         }else if(accept(TokenClass.DOT)){
             nextToken();
