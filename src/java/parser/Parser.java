@@ -1,11 +1,17 @@
 package parser;
 
 
+import ast.FunDecl;
+import ast.Program;
+import ast.StructTypeDecl;
+import ast.VarDecl;
 import lexer.Token;
 import lexer.Token.TokenClass;
 import lexer.Tokeniser;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 
@@ -26,11 +32,11 @@ public class Parser {
         this.tokeniser = tokeniser;
     }
 
-    public void parse() {
+    public Program parse() {
         // get the first token
         nextToken();
 
-        parseProgram();
+        return parseProgram();
     }
 
     public int getErrorCount() {
@@ -116,14 +122,18 @@ public class Parser {
     }
 
 
-    private void parseProgram() {
+    private Program parseProgram() {
         parseIncludes();
+
+        List<StructTypeDecl> stds = new ArrayList<>();
+        List<VarDecl> vds = new ArrayList<>();
+        List<FunDecl> fds = new ArrayList<>();
 
         while (accept(TokenClass.STRUCT, TokenClass.INT, TokenClass.CHAR, TokenClass.VOID)) {
             if (token.tokenClass == TokenClass.STRUCT &&
                     lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
                     lookAhead(2).tokenClass == TokenClass.LBRA) {
-                parseStructDecl();
+                stds.add(parseStructDecl());
             }
             else {
                 // to be completed ...
@@ -133,6 +143,7 @@ public class Parser {
         // to be completed ...
 
         expect(TokenClass.EOF);
+        return new Program(stds, vds, fds);
     }
 
     // includes are ignored, so does not need to return an AST node
@@ -144,12 +155,15 @@ public class Parser {
         }
     }
 
-    private void parseStructDecl(){
+    private StructTypeDecl parseStructDecl(){
         expect(TokenClass.STRUCT);
         expect(TokenClass.IDENTIFIER);
         expect(TokenClass.LBRA);
         // to be completed ...
+        return null; // to be changed
     }
+
+
 
     // to be completed ...
 }
