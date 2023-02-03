@@ -354,6 +354,7 @@ public class Tokeniser {
             while(Character.isDigit(c)){
                 c = scanner.next();
                 sb.append(c);
+                c = scanner.peek();
             }
             return new Token(TokenClass.INT_LITERAL,sb.toString(), line, column);
         }

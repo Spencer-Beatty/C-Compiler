@@ -318,54 +318,54 @@ public class Parser {
         return;
     }
 
-    private void parseExp(){
-        if(accept(TokenClass.LPAR)){
+    private void parseExp() {
+        if (accept(TokenClass.LPAR)) {
             // "(" type ")" exp   || "(" exp ")"
             nextToken(); // consume (
-            if(accept(TokenClass.INT,TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT)){
+            if (accept(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT)) {
                 // ( type ) exp
                 parseType();
                 expect(TokenClass.RPAR);
                 parseExp();
-            }else{
+            } else {
                 // ( exp )
                 parseExp();
                 expect(TokenClass.RPAR);
             }
 
 
-        }else if(accept(TokenClass.IDENTIFIER)){
+        } else if (accept(TokenClass.IDENTIFIER)) {
             // not consuming here in case of function
-            if(lookAhead(1).tokenClass == TokenClass.LPAR){
+            if (lookAhead(1).tokenClass == TokenClass.LPAR) {
                 //function call
                 parseFuncCall();
-            }else{
+            } else {
                 // not function so we consume identifier
                 nextToken();
             }
 
-        }else if(accept(TokenClass.PLUS, TokenClass.MINUS)){
+        } else if (accept(TokenClass.PLUS, TokenClass.MINUS)) {
             // expecting (+ | - ) exp
             // need to watch out for messing this up with binary expression
             // maybe this is the same as binary expression though
             nextToken();
             parseExp();
 
-        }else if(accept(TokenClass.STRING_LITERAL,TokenClass.CHAR_LITERAL,TokenClass.INT_LITERAL)){
+        } else if (accept(TokenClass.STRING_LITERAL, TokenClass.CHAR_LITERAL, TokenClass.INT_LITERAL)) {
             //nothing else to do here, terminal state
             nextToken();
 
-        }else if(accept(TokenClass.ASTERIX)){
+        } else if (accept(TokenClass.ASTERIX)) {
             //similar to (+ | -) consume the token and then
             // look for proceeding exp
             nextToken();
             parseExp();
 
-        }else if(accept(TokenClass.AND)){
+        } else if (accept(TokenClass.AND)) {
             nextToken();
             parseExp();
 
-        }else if(accept(TokenClass.SIZEOF)){
+        } else if (accept(TokenClass.SIZEOF)) {
             //"sizeof" "(" type ")"
             nextToken();
             expect(TokenClass.LPAR);
@@ -373,7 +373,7 @@ public class Parser {
             expect(TokenClass.RPAR);
 
 
-        }else{
+        } else {
             //raise errors
             // no expression was reached.
             error();
@@ -381,6 +381,14 @@ public class Parser {
 
         }
 
+
+        // try this
+        parseExpPrime();
+        return;
+
+    }
+
+    private void parseExpPrime(){
         // this ensures that an expression is finished before coming into this statement
         if(accept(TokenClass.ASSIGN)) {
             // deal with assign here
@@ -391,8 +399,8 @@ public class Parser {
         else if(accept(TokenClass.LT,TokenClass.GT,TokenClass.LE,TokenClass.GE,TokenClass.NE,
                 TokenClass.EQ,TokenClass.PLUS,TokenClass.MINUS,TokenClass.DIV,TokenClass.ASTERIX,
                 TokenClass.REM,TokenClass.LOGOR,TokenClass.LOGAND)){
-              nextToken();
-              parseExp();
+            nextToken();
+            parseExp();
             // exp (">" | "<" | ">=" | "<=" | "!=" | "==" | "+" | "-" | "/" | "*" | "%" | "||" | "&&") exp  # binary operators
         }else if(accept(TokenClass.LSBR)){
             nextToken();
@@ -402,12 +410,30 @@ public class Parser {
             parseExp();
             expect(TokenClass.RSBR);
 
-        }else if(accept(TokenClass.DOT)){
+        }
+        // this is an espression so has potential for assign or some other to come after it.
+        else if(accept(TokenClass.DOT)){
             nextToken();
-            expect(TokenClass.IDENTIFIER);
+
+            if (lookAhead(1).tokenClass == TokenClass.LPAR) {
+                //function call
+                parseFuncCall();
+            } else {
+                // not function so we consume identifier
+                nextToken();
+            }
+            // what kind of stuff can come after a field?
+            // IDENT[ exp ]
+            // IDENT( ) # function call
+            // IDENT =
+            // IDENT BinOP
+            // Lesson, after
+
+        }else{
+            return;
         }
 
-        return;
+        parseExpPrime();
     }
 
     private void parseAssignExp(){
@@ -439,7 +465,7 @@ public class Parser {
             }
         }
 
-        //consume the LPAR or raise error is EOF
+        //consume the RPAR or raise error is EOF
         expect(TokenClass.RPAR);
         return;
 
