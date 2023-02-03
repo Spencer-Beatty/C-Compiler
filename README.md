@@ -6,7 +6,7 @@ We encourage you to regularly check this repository for changes.
 # Deadlines #
 
 1. [Part 1 (parser)](desc/part1/): Friday, 3 February 2023 at 5pm, weight = 20%
-2. Part 2 (ast builder + semantic analyser): Friday, 24 February 2023 at 5pm, weight = 20%
+2. [Part 2 (ast builder + semantic analyser)](desc/part2): Friday, 24 February 2023 at 5pm, weight = 20%
 3. Part 3 (code generator): Friday, 17 March 2023, at 5pm, weight = 20%
 4. Part 4 (register allocator): Friday 7 April 2023, at 5pm, weight = 20%
 5. Part 5 (object-oriented features): Friday 28 April 2023, at 5pm, weight = 20%
