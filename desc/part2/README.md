@@ -201,7 +201,7 @@ Using EBNF syntax, the output should be of the form: `AST_NODE_CLASS_NAME '(' [S
 
 ### Examples:
 
-* `y = 3*x;` should result in the following output: `Assign(VarExpr(y),BinOp(IntLiteral(3), MUL, VarExpr(x)))`.
+* `y = 3*x;` should result in the following output: `ExprStmt(Assign(VarExpr(y),BinOp(IntLiteral(3), MUL, VarExpr(x))))`.
 * `void foo() { return; }` should result in: `FunDecl(VOID, foo, Block(Return()))`.
 * `+x` should result in just `BinOp(IntLiteral(0),ADD,VarExpr(x))`
 * `-x` should result in: `BinOp(IntLiteral(0),SUB,VarExpr(x))`.
