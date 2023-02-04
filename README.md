@@ -152,24 +152,22 @@ You should grant the following users *Reporter* access:
 
 Next, you will have to clone the forked repository to your local machine. You can clone the repository using either HTTPS or SSH.
 Using SSH is more secure, but requires
-[uploading a private key to GitLab](https://docs.gitlab.com/ee/ssh/). HTTPS is less secure but simpler as it only
-requires you to enter your CS account username and password. If in doubt, HTTPS is sufficient.
+[uploading a public key to GitLab](https://docs.gitlab.com/ee/ssh/).
+HTTPS is less secure but simpler as it only requires you to enter your CS account username and password.
+If in doubt, HTTPS is sufficient.
 
-In order to clone the repository via SSH you should ensure that you've uploaded a private key to GitLab, launch a terminal, and type:
+* To clone the repository via SSH you should ensure that you've uploaded a public key to GitLab, launch a terminal, and type:
+  ```
+  $ git clone git@gitlab.cs.mcgill.ca:XXXXXXXX/comp520-coursework-w2023.git
+  ```
+  where XXXXXXXX is your CS gitlab account id.
 
-```
-$ git clone git@gitlab.cs.mcgill.ca:XXXXXXXX/comp520-coursework-w2023.git
-```
 
-where XXXXXXXX is your CS gitlab account id.
-
-In order to clone the repository via HTTPS you should launch a terminal and type:
-
-```
-$ git clone https://gitlab.cs.mcgill.ca/XXXXXXXX/comp520-coursework-w2023.git
-```
-
-where XXXXXXX is your CS  gitlab account id as above, and you should be prompted to type in your CS gitlab account id and password.
+* To clone the repository via HTTPS you should launch a terminal and type:
+  ```
+  $ git clone https://gitlab.cs.mcgill.ca/XXXXXXXX/comp520-coursework-w2023.git
+  ```
+  where XXXXXXX is your CS  gitlab account id as above, and you should be prompted to type in your CS gitlab account id and password.
 
 ## Development environment (editor) setup
 You can choose to use any development environment for your project, such as IntelliJ, Eclipse, Emacs, Vim or your favourite text editor.
