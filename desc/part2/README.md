@@ -124,7 +124,7 @@ You should make sure the resulting grammar is non-ambiguous, eliminate left recu
 As see in the lecture, left-associative binary operators should be handled using an iterative approach in the parser (rather than recursion).
 We suggest that you express these in the grammar using a Kleane closure, which will directly translate to a loop in your parser code.
 
-The associatibity of unary operators is discussed below, but since by definition they only act on a single argument, there is no need to implement any repetition mechanism (either recursive or iterative).
+The associativity of unary operators is discussed below, but since by definition they only act on a single argument, there is no need to implement any repetition mechanism (either recursive or iterative).
 However, you should ensure that precedence is encoded correctly by creating new non-terminals in the gramamr (if needed).
 
 
