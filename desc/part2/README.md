@@ -128,24 +128,24 @@ The associatibity of unary operators is discussed below, but since by definition
 However, you should ensure that precedence is encoded correctly by creating new non-terminals in the gramamr (if needed).
 
 
-| Precedence    |Operator       | Description       |Associativity  |
-| :------------ | :------------ | :-----------      | :-----------  |
-| 1             | ()            | Function call     | Left-to-right |
-| 1             | \[\]          | Array subscripting | Left-to-right |
-| 1             | .             | Structure member access | Left-to-right |
-| 1             | =             | Assignment        | Right-to-left |
-| 2             | +             | Unary plus | Right-to-left |
-| 2             | -             | Unary minus | Right-to-left |
-| 2             | (type)        | Type cast | Right-to-left |
-| 2             | *             | Indirection | Right-to-left |
-| 2             | &             | Address of | Right-to-left |
-| 3             | * / %         | Multiplication, division, remainder | Left-to-right |
-| 4             | + -           | Addition, subtraction | Left-to-right |
-| 5             | < <= > >=     | Relational operators | Left-to-right |
-| 6             | == \!=        | Relational operators | Left-to-right |
-| 7             | &&            | Logical AND | Left-to-right |
-| 8             | ⎮⎮            | Logical OR | Left-to-right |
-  
+| Precedence |Operator       | Description       |Associativity  |
+|:-----------| :------------ | :-----------      | :-----------  |
+| 1          | ()            | Function call     | Left-to-right |
+| 1          | \[\]          | Array subscripting | Left-to-right |
+| 1          | .             | Structure member access | Left-to-right |
+| 2          | +             | Unary plus | Right-to-left |
+| 2          | -             | Unary minus | Right-to-left |
+| 2          | (type)        | Type cast | Right-to-left |
+| 2          | *             | Indirection | Right-to-left |
+| 2          | &             | Address of | Right-to-left |
+| 3          | * / %         | Multiplication, division, remainder | Left-to-right |
+| 4          | + -           | Addition, subtraction | Left-to-right |
+| 5          | < <= > >=     | Relational operators | Left-to-right |
+| 6          | == \!=        | Relational operators | Left-to-right |
+| 7          | &&            | Logical AND | Left-to-right |
+| 8          | ⎮⎮            | Logical OR | Left-to-right |
+| 9          | =             | Assignment        | Right-to-left |
+
 Here is how to "interpret" the following piece of C code based on precedence and associativity:
  
 ```C
@@ -157,6 +157,7 @@ mystruct.field[1] // (mystruct.field)[1]
 &p[1]             // &(p[1])
 a+b+c             // (a+b)+c
 a=b=c             // a=(b=c)
+a=b.c=d           // a=((b.c)=d)
 ```
 
 Note that associativity for unary operators seems at first a bit of an ill-defined concept.
