@@ -1,10 +1,7 @@
 package parser;
 
 
-import ast.FunDecl;
-import ast.Program;
-import ast.StructTypeDecl;
-import ast.VarDecl;
+import ast.*;
 import lexer.Token;
 import lexer.Token.TokenClass;
 import lexer.Tokeniser;
@@ -125,15 +122,13 @@ public class Parser {
     private Program parseProgram() {
         parseIncludes();
 
-        List<StructTypeDecl> stds = new ArrayList<>();
-        List<VarDecl> vds = new ArrayList<>();
-        List<FunDecl> fds = new ArrayList<>();
+        List<Decl> decls = new ArrayList<>();
 
         while (accept(TokenClass.STRUCT, TokenClass.INT, TokenClass.CHAR, TokenClass.VOID)) {
             if (token.tokenClass == TokenClass.STRUCT &&
                     lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
                     lookAhead(2).tokenClass == TokenClass.LBRA) {
-                stds.add(parseStructDecl());
+                decls.add(parseStructDecl());
             }
             else {
                 // to be completed ...
@@ -143,7 +138,7 @@ public class Parser {
         // to be completed ...
 
         expect(TokenClass.EOF);
-        return new Program(stds, vds, fds);
+        return new Program(decls);
     }
 
     // includes are ignored, so does not need to return an AST node

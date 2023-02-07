@@ -37,20 +37,10 @@ public class ASTPrinter {
             case Program p -> {
                 writer.print("Program(");
                 String delimiter = "";
-                for (StructTypeDecl std : p.structTypeDecls) {
+                for (Decl d : p.decls) {
                     writer.print(delimiter);
                     delimiter = ",";
-                    visit(std);
-                }
-                for (VarDecl vd : p.varDecls) {
-                    writer.print(delimiter);
-                    delimiter = ",";
-                    visit(vd);
-                }
-                for (FunDecl fd : p.funDecls) {
-                    writer.print(delimiter);
-                    delimiter = ",";
-                    visit(fd);
+                    visit(d);
                 }
                 writer.print(")");
                 writer.flush();
