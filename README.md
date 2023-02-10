@@ -6,7 +6,7 @@ We encourage you to regularly check this repository for changes.
 # Deadlines #
 
 1. [Part 1 (parser)](desc/part1/): Friday, 3 February 2023 at 5pm, weight = 20%
-2. Part 2 (ast builder + semantic analyser): Friday, 24 February 2023 at 5pm, weight = 20%
+2. [Part 2 (ast builder + semantic analyser)](desc/part2): Friday, 24 February 2023 at 5pm, weight = 20%
 3. Part 3 (code generator): Friday, 17 March 2023, at 5pm, weight = 20%
 4. Part 4 (register allocator): Friday 7 April 2023, at 5pm, weight = 20%
 5. Part 5 (object-oriented features): Friday 28 April 2023, at 5pm, weight = 20%
@@ -48,10 +48,10 @@ You can test if you already have Java development kit installed by typing:
 ```
 javac -version
 ``` 
-If this returns a version equals to, or higher than 11, then you are good to go.
-Otherwise, follow the link below for instructions on how to install manually the JDK 11 (feel free to install any newer version if you wish to):
+If this returns a version equals to, or higher than 17, then you are good to go.
+Otherwise, follow the link below for instructions on how to install manually the JDK 17 (feel free to install any newer version if you wish to):
 
-* https://docs.oracle.com/en/java/javase/11/install/overview-jdk-installation.html
+* https://docs.oracle.com/en/java/javase/17/install/overview-jdk-installation.html
 
 ## Ant ##
 
@@ -80,7 +80,7 @@ If this is not the case, you can follow this link with instructions on how to in
 
 # Marking #
 
-The marking will be done using an automated test suite on a Linux machine using Java 11.
+The marking will be done using an automated test suite on a Linux machine using Java 17.
 Please note that you are not allowed to modify the `Main.java` file which is the main entry point to the compiler.
 The `Main.java` will be replaced by our own when we run the automarker.
 Also make sure that the build script provided remains unchanged so that your project can be built on our machine.
@@ -152,24 +152,22 @@ You should grant the following users *Reporter* access:
 
 Next, you will have to clone the forked repository to your local machine. You can clone the repository using either HTTPS or SSH.
 Using SSH is more secure, but requires
-[uploading a private key to GitLab](https://docs.gitlab.com/ee/ssh/). HTTPS is less secure but simpler as it only
-requires you to enter your CS account username and password. If in doubt, HTTPS is sufficient.
+[uploading a public key to GitLab](https://docs.gitlab.com/ee/ssh/).
+HTTPS is less secure but simpler as it only requires you to enter your CS account username and password.
+If in doubt, HTTPS is sufficient.
 
-In order to clone the repository via SSH you should ensure that you've uploaded a private key to GitLab, launch a terminal, and type:
+* To clone the repository via SSH you should ensure that you've uploaded a public key to GitLab, launch a terminal, and type:
+  ```
+  $ git clone git@gitlab.cs.mcgill.ca:XXXXXXXX/comp520-coursework-w2023.git
+  ```
+  where XXXXXXXX is your CS gitlab account id.
 
-```
-$ git clone git@gitlab.cs.mcgill.ca:XXXXXXXX/comp520-coursework-w2023.git
-```
 
-where XXXXXXXX is your CS gitlab account id.
-
-In order to clone the repository via HTTPS you should launch a terminal and type:
-
-```
-$ git clone https://gitlab.cs.mcgill.ca/XXXXXXXX/comp520-coursework-w2023.git
-```
-
-where XXXXXXX is your CS  gitlab account id as above, and you should be prompted to type in your CS gitlab account id and password.
+* To clone the repository via HTTPS you should launch a terminal and type:
+  ```
+  $ git clone https://gitlab.cs.mcgill.ca/XXXXXXXX/comp520-coursework-w2023.git
+  ```
+  where XXXXXXX is your CS  gitlab account id as above, and you should be prompted to type in your CS gitlab account id and password.
 
 ## Development environment (editor) setup
 You can choose to use any development environment for your project, such as IntelliJ, Eclipse, Emacs, Vim or your favourite text editor.
@@ -290,8 +288,8 @@ Note that to ensure that you are not using any third party libraries, we will re
 scalaVersion := "2.11.12"
 
 javacOptions ++= Seq(
-  "-source", "11",
-  "-target", "11"
+  "-source", "17",
+  "-target", "17"
 )
 
 compileOrder := CompileOrder.Mixed

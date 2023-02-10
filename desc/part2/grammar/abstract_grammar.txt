@@ -1,14 +1,16 @@
-// The program top AST node (a list of struct type declarations, variable declarations, FunDecl definitions)
-Program    ::= (StructTypeDecl | VarDecl | FunDecl)*
+// The program top AST node (a list of declarations)
+Program    ::= (Decl)*
 
+// Declaration: a struct type, variable or FunDecl definitions
+Decl       ::= StructTypeDecl | VarDecl | FunDecl
 
 // Types
 Type        ::= BaseType | PointerType | StructType | ArrayType
 
-BaseType    ::= INT | CHAR | VOID
+BaseType    ::= INT | CHAR | VOID | NONE | UNKNOWN  // NONE should be used mostly for statements and UNKNOWN in case where no type cam be inferred
 PointerType ::= Type              // use to represent pointers to other types
 StructType  ::= String            // represents a struct type (the String is the name of the declared struct type)
-ArrayType   ::= Type int          // Type represents the element type, int represents the number of elements (number of elements)
+ArrayType   ::= Type int          // Type represents the element type, int represents the number of elements in the declared array
 
 // Struct declaration
 StructTypeDecl ::= StructType VarDecl*
@@ -21,7 +23,7 @@ FunDecl  ::= Type String VarDecl* Block
 
 
 // Expressions
-Expr       ::= IntLiteral | StrLiteral | ChrLiteral | VarExpr | FunCallExpr | BinOp | ArrayAccessExpr | FieldAccessExpr | ValueAtExpr | AddressOfExpr | SizeOfExpr | TypecastExpr
+Expr       ::= IntLiteral | StrLiteral | ChrLiteral | VarExpr | FunCallExpr | BinOp | ArrayAccessExpr | FieldAccessExpr | ValueAtExpr | AddressOfExpr | SizeOfExpr | TypecastExpr | Assign
 
 // Literals
 IntLiteral ::= int     // int stores the value of the integer
@@ -51,15 +53,17 @@ ValueAtExpr ::= Expr
 AddressOfExpr ::= Expr
 
 // Sizeof expression : sizeof(Type) (e.g. sizeof(int*))
-SizeOfExpr ::= Type
+SizeOfExpr   ::= Type
 
 // Typecast expression : (Type)Expr (e.g. (int*) malloc(4))
 TypecastExpr ::= Type Expr
 
+// Assignment epxression: Expr = Expr; (e.g. x[3] = 2)
+Assign       ::= Expr Expr
 
 
 // Statements
-Stmt       ::= Block | While | If | Assign | Return | ExprStmt
+Stmt       ::= Block | While | If | Return | ExprStmt
 
 // An expression statement (e.g. x+2;)
 ExprStmt ::= Expr
@@ -69,9 +73,6 @@ While      ::= Expr Stmt
 
 // If statement: if (Expr) Stmt1 else Stmt2; (if the second Stmt is null, this means there is no else part)
 If         ::= Expr Stmt [Stmt]
-
-// Assignment statement: Expr = Expr; (e.g. x[3] = 2;)
-Assign     ::= Expr Expr
 
 // Return statement : (the Expr is optional)
 Return     ::= [Expr]
