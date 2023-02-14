@@ -44,7 +44,9 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 			case (Type t) -> {
 				yield t;
 			}
-
+			default -> {
+				yield null;
+			}
 			// to complete ...
 		};
 
