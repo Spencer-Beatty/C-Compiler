@@ -1,0 +1,55 @@
+// structtype "{" (vardecl)+ "}" ";"    # structure declaration
+
+// vardecl    ::= type IDENT ("[" INT_LITERAL "]")* ";"
+// # normal declaration, (e.g. int a;), or multi-dimensional array declaration, (e.g. int a[2][5];)
+
+#include "a"
+#include "b"
+#include "c"
+
+
+struct b { int b; };
+struct c { int c; int d; char d; void a; };
+struct d { int c[1][2]; };
+struct d { int c[1][2][2]; };
+
+int function(){
+    return;
+    return;
+    return;
+
+    return 1-1=1;
+
+
+}
+
+char bunction(){
+    void c;
+
+    a = 10 = b = 20;
+
+
+    if (a < b) {
+        c = a;
+    }
+    else {
+        c = b;
+    }
+}
+
+struct a strunction(){
+
+    c = -(a < b) + & a + & b;
+
+    printf("%d", c);
+}
+
+struct a {
+    struct b************ a;
+    struct a b;
+};
+
+
+void p() {
+	x.y = z;
+    }

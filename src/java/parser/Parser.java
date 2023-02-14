@@ -14,6 +14,7 @@ import java.util.Queue;
 
 /**
  * @author cdubach
+ * @author sbeatt4
  */
 public class Parser {
 
@@ -119,24 +120,42 @@ public class Parser {
     }
 
 
+    // includes are ignored, so does not need to return an AST node
+
+
     private Program parseProgram() {
+        // (Include)*
         parseIncludes();
 
         List<Decl> decls = new ArrayList<>();
-
+        // (structdecl | vardecl | fundecl)*
         while (accept(TokenClass.STRUCT, TokenClass.INT, TokenClass.CHAR, TokenClass.VOID)) {
+            // structdecl
             if (token.tokenClass == TokenClass.STRUCT &&
                     lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
                     lookAhead(2).tokenClass == TokenClass.LBRA) {
                 decls.add(parseStructDecl());
+
             }
-            else {
-                // to be completed ...
-                nextToken(); // this line should be modified/removed
+            // fundecl where type != struct
+            else if(lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
+                    lookAhead(2).tokenClass == TokenClass.LPAR) {
+                decls.add(parseFunDecl());
+                // fundecl where type = structtype (struct ident) followed by ident
+            }else if(token.tokenClass==TokenClass.STRUCT &&
+                    lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
+                    lookAhead(2).tokenClass == TokenClass.IDENTIFIER) {
+                decls.add(parseFunDecl());
+                // vardecl
+            }else{
+                decls.add(parseVarDecl());
             }
         }
+
         // to be completed ...
 
+
+        // EOF
         expect(TokenClass.EOF);
         return new Program(decls);
     }
@@ -150,83 +169,33 @@ public class Parser {
         }
     }
 
-    private StructTypeDecl parseStructDecl(){
-        expect(TokenClass.STRUCT);
-        expect(TokenClass.IDENTIFIER);
-        expect(TokenClass.LBRA);
-        // to be completed ...
-        return null; // to be changed
-    }
-
-    private void parseProgram() {
-        // (Include)*
-        parseIncludes();
-
-        // (structdecl | vardecl | fundecl)*
-        while (accept(TokenClass.STRUCT, TokenClass.INT, TokenClass.CHAR, TokenClass.VOID)) {
-            // structdecl
-            if (token.tokenClass == TokenClass.STRUCT &&
-                    lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
-                    lookAhead(2).tokenClass == TokenClass.LBRA) {
-                parseStructDecl();
-
-            }
-            // fundecl where type != struct
-            else if(lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
-                    lookAhead(2).tokenClass == TokenClass.LPAR) {
-                parseFunDecl();
-                // fundecl where type = structtype (struct ident) followed by ident
-            }else if(token.tokenClass==TokenClass.STRUCT &&
-                    lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
-                    lookAhead(2).tokenClass == TokenClass.IDENTIFIER) {
-                parseFunDecl();
-                // vardecl
-            }else{
-                parseVarDecl();
-            }
-        }
-
-        // to be completed ...
-
-
-        // EOF
-        expect(TokenClass.EOF);
-    }
-
-    // includes are ignored, so does not need to return an AST node
-    private void parseIncludes() {
-        if (accept(TokenClass.INCLUDE)) {
-            nextToken();
-            expect(TokenClass.STRING_LITERAL);
-            parseIncludes();
-        }
-    }
-
-    private void parseStructType(){
+    private StructType parseStructType(){
         // checks struct twice, but is ok because accept does not consume
         // and will prevent calling parse struct type at the wrong time.
         if(accept(TokenClass.STRUCT)) {
             nextToken();
+            String structType = token.data;
             expect(TokenClass.IDENTIFIER);
-
+            return new StructType(structType);
         }else{
             error(TokenClass.STRUCT);
             nextToken();
         }
-        return;
+        return null;
 
     }
 
-    private void parseStructDecl(){
+    private StructTypeDecl parseStructDecl(){
         if(accept(TokenClass.STRUCT)){
-            parseStructType();
+            StructType structType = parseStructType();
+            ArrayList<VarDecl> vds = new ArrayList<>();
 
             expect(TokenClass.LBRA);
             // at least 1 var decl
             if(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
-                parseVarDecl();
+                vds.add(parseVarDecl());
                 while(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
-                    parseVarDecl();
+                    vds.add(parseVarDecl());
                 }
             }else{
                 error(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT);
@@ -234,48 +203,57 @@ public class Parser {
             }
             expect(TokenClass.RBRA);
             expect(TokenClass.SC);
-            return;
+            return new StructTypeDecl(structType, vds);
             // to be completed ...
         }
+        error(TokenClass.STRUCT);
+        return null;
     }
 
     // type IDENT "(" params ")" block
-    private void parseFunDecl(){
-        parseType();
+    private FunDecl parseFunDecl(){
+        Block block;
+        Type type = parseType();
+        String name = token.data;
         expect(TokenClass.IDENTIFIER);
         expect(TokenClass.LPAR);
-        parseParams();
+        ArrayList<VarDecl> params = parseParams();
         expect(TokenClass.RPAR);
         if(accept(TokenClass.LBRA)){
-            parseBlock();
+            block = parseBlock();
         }else{
+            block = null;
             error(TokenClass.LBRA);
             nextToken();
         }
-        return;
+        return new FunDecl(type, name, params, block);
 
 
     }
 
-    private void parseParams(){
+    private ArrayList<VarDecl> parseParams(){
+        ArrayList<VarDecl> params = new ArrayList<>();
         if (accept(TokenClass.RPAR)){
             // consume of RPAR dealt with after returning
-            return;
+            return params;
         }else{
-            parseType();
+            Type type = parseType();
+            params.add(new VarDecl(type, token.data));
             expect(TokenClass.IDENTIFIER);
         }
         while(! accept(TokenClass.RPAR) ){
             expect(TokenClass.COMMA);
-            parseType();
+            Type type = parseType();
+            params.add(new VarDecl(type, token.data));
             expect(TokenClass.IDENTIFIER);
         }
-        return;
+        return params;
     }
 
-    private void parseVarDecl(){
-
-        parseType();
+    private VarDecl parseVarDecl(){
+        Type type = parseType();
+        String name = token.data;
+        // if name is not an identifier then error will be raised
         expect(TokenClass.IDENTIFIER);
         while(accept(TokenClass.LSBR)){
             // expect [ INT_LITERAL ]
@@ -284,82 +262,108 @@ public class Parser {
             expect(TokenClass.RSBR);
         }
         expect(TokenClass.SC);
-        return;
+        return new VarDecl(type,name);
 
     }
 
-    private void parseType(){
+
+    private Type parseType(){
+        Type type;
         if(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID)){
+            switch (token.tokenClass){
+                case INT -> type = BaseType.INT;
+                case CHAR -> type = BaseType.CHAR;
+                case VOID -> type = BaseType.VOID;
+                default -> type = null;
+            }
             nextToken();
         }else if(accept(TokenClass.STRUCT)){
-            parseStructType();
+            type = parseStructType();
         }
         else{
             error(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT);
             nextToken(); // need to consusme otherwise get stuck in loop potentially
-            return;
+            return null;
         }
-        while(accept(TokenClass.ASTERIX)){
-            nextToken();
+        if(accept(TokenClass.ASTERIX)){
+            ArrayList<String> pointers = new ArrayList<>();
+            while(accept(TokenClass.ASTERIX)){
+                pointers.add(token.data);
+                nextToken();
+            }
+            // do it in two lines to not run into errors or have to
+            // add an additional statement
+            PointerType pt = new PointerType(type, pointers);
+            type = pt;
         }
-        return;
+        return type;
     }
 
-    private void parseBlock(){
+    private Block parseBlock(){
         // "{" (vardecl)* (stmt)* "}"
+        ArrayList<VarDecl> vds = new ArrayList<>();
+        ArrayList<Stmt> stmts = new ArrayList<>();
         if(accept(TokenClass.LBRA)) {
             nextToken();
             // if starts with type then must be a var decl
             while (accept(TokenClass.INT,TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT)) {
-                parseVarDecl();
+                vds.add(parseVarDecl());
             }
 
             while(! accept(TokenClass.RBRA,TokenClass.EOF)){
                 // need to make sure that parseStmt always consumes a character
-                parseStmt();
+                stmts.add(parseStmt());
             }
 
             // if we reach here we have found the '}' or EOF
             expect(TokenClass.RBRA);
-            return;
+            return new Block(vds, stmts);
         }
+        error(TokenClass.LBRA);
+        return null;
     }
 
-    private void parseStmt(){
+    private Stmt parseStmt(){
         if(accept(TokenClass.LBRA)){
-            parseBlock();
+            return parseBlock();
         }else if(accept(TokenClass.WHILE)){
             nextToken();
             expect(TokenClass.LPAR);
-            parseExp();
+            Expr expr = parseExp();
             expect(TokenClass.RPAR);
-            parseStmt();
+            Stmt stmt = parseStmt();
+            return new While(expr,stmt);
         }else if(accept(TokenClass.IF)){
             nextToken();
             expect(TokenClass.LPAR);
-            parseExp();
+            Expr expr = parseExp();
             expect(TokenClass.RPAR);
-            parseStmt();
+            Stmt stmt1 = parseStmt();
+            Stmt stmt2 = null;
             if(accept(TokenClass.ELSE)){
                 nextToken();
-                parseStmt();
+                stmt2 = parseStmt();
             }
+            return new If(expr, stmt1, stmt2);
         }else if(accept(TokenClass.RETURN)){
             nextToken();
             if(accept(TokenClass.SC)){
                 nextToken();
+                return new Return(null);
             }else{
-                parseExp();
+                Expr expr = parseExp();
                 expect(TokenClass.SC);
+                return new Return(expr);
             }
         }else{
-            parseExp();
+            Expr expr = parseExp();
             expect(TokenClass.SC);
+            return new ExprStmt(expr);
         }
-        return;
+
     }
 
-    private void parseExp() {
+    private Expr parseExp() {
         if (accept(TokenClass.LPAR)) {
             // "(" type ")" exp   || "(" exp ")"
             nextToken(); // consume (
@@ -425,7 +429,7 @@ public class Parser {
 
         // try this
         parseExpPrime();
-        return;
+        return null;
 
     }
 

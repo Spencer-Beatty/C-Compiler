@@ -6,9 +6,20 @@ import java.util.List;
 public final class StructTypeDecl extends Decl {
 
     // to be completed
-    public List<ASTNode> children() {
+    StructType structType;
+    List<VarDecl> vds;
 
-        return new ArrayList(); // To change!
+    public StructTypeDecl(StructType structType, List<VarDecl> vds){
+        this.structType = structType;
+        this.vds = vds;
+    }
+
+    public List<ASTNode> children() {
+        List<ASTNode> children = new ArrayList<ASTNode>();
+        children.add(structType);
+        children.addAll(vds);
+
+        return children; // To change!
     }
 
 }
