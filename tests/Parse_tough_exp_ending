@@ -1,0 +1,33 @@
+
+
+void main(){
+    // dots
+
+    end.end;
+    end.end1();
+    end.end2(a);
+    end.end3(a,b);
+    end.end4(a,b) = end;
+    end.end5.end5.end5.end5.end5.end5;
+    end.end6.end6 + end.end6.end6.end();
+    end.end7 == end.end7();
+    end.end8[1];
+
+    //
+    a[1].a[1].b == 10;
+    a[1+2];
+    a["char"];
+
+    //
+
+    exp > a;
+    exp < b;
+    exp >= 1;
+    exp <= 2;
+    exp >= 3;
+    exp != 40000;
+    exp != 500505050500505;
+    exp + exp + exp > 5 < 10 <= 11 != 20 != 50 / 100 - 20 + 30 * 90 % 1000 || you && me + (1 + (2 + 3 ));
+
+
+}

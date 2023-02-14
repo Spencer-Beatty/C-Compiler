@@ -1,0 +1,58 @@
+
+int main () {
+
+    if( 1) {
+
+       /* Executes when the boolean expression 1 is true */
+       if(2) {
+          /* Executes when the boolean expression 2 is true */
+       }
+    }
+
+
+   /* check the boolean condition */
+   if( a == 100 ) {
+
+      /* if condition is true then check the following */
+      if( b == 200 ) {
+         /* if condition is true then print the following */
+         printf("Value of a is 100 and b is 200\n" );
+      }
+   }
+
+   printf("Exact value of a is : %d\n", a );
+   printf("Exact value of b is : %d\n", b );
+
+   return 0;
+}
+
+
+char pop(int a, int b, int c){
+    return ;
+}
+
+char array(int b, char d, struct a b){
+    return 1;
+    if ( a == b = c == d) {
+        if(d = g){
+            if( b ){
+                return;
+            }else{
+                if ( b ){
+                    if ( c ) {
+                        while ( a + b ){
+                            return 5;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+void p() {
+	x.y = z;
+}

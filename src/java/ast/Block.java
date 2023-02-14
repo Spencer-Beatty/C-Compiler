@@ -9,6 +9,11 @@ public final class Block extends Stmt {
     public List<VarDecl> vds;
     public List<Stmt> stmts;
 
+    public Block(List<VarDecl> vds, List<Stmt> stmts){
+        this.vds = vds;
+        this.stmts = stmts;
+    }
+
     @Override
     public List<ASTNode> children() {
         List children = new ArrayList<ASTNode>();
@@ -16,8 +21,6 @@ public final class Block extends Stmt {
         children.addAll(stmts);
         return children;
     }
-
-    // to complete ...
 
 
 }
