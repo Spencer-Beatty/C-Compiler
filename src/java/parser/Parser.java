@@ -329,14 +329,14 @@ public class Parser {
         }else if(accept(TokenClass.WHILE)){
             nextToken();
             expect(TokenClass.LPAR);
-            Expr expr = parseExp();
+            Expr expr = parseExpr();
             expect(TokenClass.RPAR);
             Stmt stmt = parseStmt();
             return new While(expr,stmt);
         }else if(accept(TokenClass.IF)){
             nextToken();
             expect(TokenClass.LPAR);
-            Expr expr = parseExp();
+            Expr expr = parseExpr();
             expect(TokenClass.RPAR);
             Stmt stmt1 = parseStmt();
             Stmt stmt2 = null;
@@ -351,17 +351,260 @@ public class Parser {
                 nextToken();
                 return new Return(null);
             }else{
-                Expr expr = parseExp();
+                Expr expr = parseExpr();
                 expect(TokenClass.SC);
                 return new Return(expr);
             }
         }else{
-            Expr expr = parseExp();
+            Expr expr = parseExpr();
             expect(TokenClass.SC);
             return new ExprStmt(expr);
         }
 
     }
+
+    // note change this to parseExp at the end
+    private Expr parseExpr(){
+        Expr lhs = parseAssign();
+        return lhs;
+    }
+    // precedence level 9
+    private Expr parseAssign(){
+        // (A ('=') )* A
+        Expr lhs = parseOr();
+        // parse or should move the token forward or return an error
+        if(accept(TokenClass.ASSIGN)){
+            nextToken();
+            Expr rhs = parseAssign();
+            return new Assign(lhs,rhs);
+        }else{
+            return lhs;
+        }
+    }
+    // precedence level 8
+    private Expr parseOr(){
+        Expr lhs = parseAnd();
+        // parse and should move forward similar to above,
+        // left associative so we can use iteration
+        while(accept(TokenClass.LOGOR)){
+            nextToken();
+            Expr rhs = parseAnd();
+            lhs = new BinOp(lhs, Op.LOGOR, rhs);
+        }
+        return lhs;
+    }
+    // precedence level 7
+    private Expr parseAnd(){
+        Expr lhs = parseEquality();
+        while(accept(TokenClass.LOGAND)){
+            nextToken();
+            Expr rhs = parseEquality();
+            lhs = new BinOp(lhs, Op.LOGAND, rhs);
+        }
+        return lhs;
+    }
+    // precedence level 6
+    // == !=
+    private Expr parseEquality(){
+        Expr lhs = parseInEquality();
+        while(accept(TokenClass.EQ, TokenClass.NE)){
+            Op op;
+            if(token.tokenClass == TokenClass.EQ){
+                op = Op.EQ;
+            }else{
+                // must be != because passed accept
+                op = Op.NE;
+            }
+            nextToken();
+
+            Expr rhs = parseInEquality();
+            lhs = new BinOp(lhs, op, rhs);
+        }
+        return lhs;
+    }
+    // precedence level 5
+    private Expr parseInEquality(){
+        Expr lhs = parseTerm();
+        while(accept(TokenClass.LT,TokenClass.GT,TokenClass.LE,TokenClass.GE)){
+            Op op;
+            if(token.tokenClass == TokenClass.LT){
+                op = Op.LT;
+            }else if(token.tokenClass == TokenClass.GT){
+                op = Op.GT;
+            }else if(token.tokenClass == TokenClass.LE){
+                op = Op.LE;
+            }else{
+                op = Op.GE;
+            }
+            nextToken();
+            Expr rhs = parseTerm();
+            lhs = new BinOp(lhs, op, rhs);
+        }
+        return lhs;
+    }
+    // precedence level 4
+    private Expr parseTerm(){
+        Expr lhs = parseFactor();
+        while(accept(TokenClass.PLUS, TokenClass.MINUS)){
+            Op op;
+            if(token.tokenClass == TokenClass.PLUS){
+                op = Op.PLUS;
+            }else{
+                op = Op.MINUS;
+            }
+            nextToken();
+
+            Expr rhs = parseFactor();
+            lhs = new BinOp(lhs, op, rhs);
+        }
+        return lhs;
+    }
+    // precedence level 3
+    private Expr parseFactor(){
+        Expr lhs = parsePre();
+        while(accept(TokenClass.ASTERIX, TokenClass.DIV, TokenClass.REM)){
+            Op op;
+            if(token.tokenClass == TokenClass.ASTERIX){
+                op = Op.ASTERIX; // think about other cases for * could they arise? a* + b
+                                    // they are prevented by left hand going forward first
+            }else if(token.tokenClass == TokenClass.REM){
+                op = Op.REM;
+            }else{
+                op = Op.DIV;
+            }
+            nextToken();
+
+            Expr rhs = parsePre();
+            lhs = new BinOp(lhs, op, rhs);
+        }
+        return lhs;
+    }
+    // precedence level 2
+    private Expr parsePre(){
+        // right to left associative, use recursion
+        // & * (type) + -
+        Expr rhs;
+        if(accept(TokenClass.AND,TokenClass.ASTERIX,TokenClass.LPAR,TokenClass.PLUS,TokenClass.MINUS)){
+            if(token.tokenClass==TokenClass.AND){
+                nextToken();
+                rhs = parsePre();
+                // parse pre again because of &(&(&(a)))
+                return new AddressOfExpr(rhs);
+            } else  if(token.tokenClass==TokenClass.ASTERIX){
+                nextToken();
+                rhs = parsePre();
+                // parse pre again because of *(*(*(a)))
+                return new AddressOfExpr(rhs);
+            } else  if(token.tokenClass==TokenClass.LPAR &&
+                    lookAhead(1).tokenClass == TokenClass.INT ||
+                    lookAhead(1).tokenClass == TokenClass.CHAR ||
+                    lookAhead(1).tokenClass == TokenClass.STRUCT ||
+                    lookAhead(1).tokenClass == TokenClass.VOID
+            ){
+                nextToken();
+                Type type = parseType();
+                // should find RPAR
+                expect(TokenClass.RPAR);
+                rhs = parsePre();
+                return new TypeCastExpr(type, rhs);
+            } else  if(token.tokenClass==TokenClass.PLUS){
+                // indicating +a
+                nextToken();
+                Expr zero = new IntLiteral(0);
+                rhs = parsePre();
+                return new BinOp(zero, Op.PLUS, rhs);
+            } else{ // MINUS
+                // indicating -a
+                nextToken();
+                Expr zero = new IntLiteral(0);
+                rhs = parsePre();
+                return new BinOp(zero, Op.MINUS, rhs);
+            }
+        }
+        // rejected by the accept
+        rhs = parseAttribute();
+        return rhs;
+    }
+    // precedence level 1
+    private Expr parseAttribute(){
+        // left to right but possibility for special cases.
+        Expr lhs;
+        if(accept(TokenClass.IDENTIFIER)){
+            String name = token.data;
+            lhs = new VarExpr(name);
+            nextToken();
+            // a.Ident a[expr] a(expr)
+            while(accept(TokenClass.DOT, TokenClass.LSBR, TokenClass.LPAR)) {
+                if (token.tokenClass == TokenClass.DOT) {
+                    nextToken();
+                    if(accept(TokenClass.IDENTIFIER)) {
+                        String field = token.data;
+                        nextToken();
+                        lhs = new FieldAccessExpr(lhs, field);
+                    }
+                } else if (token.tokenClass == TokenClass.LSBR) {
+                    nextToken();
+                    Expr rhs = parseExpr(); // ?? seems like should go back and parse expr again
+                    expect(TokenClass.RSBR);
+                    lhs = new ArrayAccessExpr(lhs, rhs);
+                } else {
+                    //LPAR
+                    nextToken();
+                    ArrayList<Expr> exprs = new ArrayList<>();
+                    if (!accept(TokenClass.RPAR)) {
+                        exprs.add(parseExpr());
+                        while (!accept(TokenClass.RPAR, TokenClass.EOF)) {
+                            expect(TokenClass.COMMA);
+                            exprs.add(parseExpr());
+                        }
+                    }
+                    // type checker will check?
+                    nextToken(); // consume rpar
+                    lhs = new FunCallExpr(name, exprs);
+
+                }
+            }
+        }else{
+            lhs = parseImmediate();
+        }
+        return lhs;
+    }
+    // precedence level 0
+    private Expr parseImmediate(){
+        //identifier should be impossible
+        if(accept(TokenClass.INT_LITERAL,TokenClass.IDENTIFIER, TokenClass.CHAR_LITERAL, TokenClass.STRING_LITERAL, TokenClass.LPAR)){
+            if(accept(TokenClass.INT_LITERAL)){
+                Expr lhs = new IntLiteral(Integer.parseInt(token.data));
+                nextToken();
+                return lhs;
+            }
+            if(accept(TokenClass.CHAR_LITERAL)){
+                Expr lhs = new ChrLiteral(token.data.charAt(0));
+                nextToken();
+                return lhs;
+            }else if(accept(TokenClass.STRING_LITERAL)){
+                Expr lhs = new StrLiteral(token.data);
+                nextToken();
+                return lhs;
+            }else if(accept(TokenClass.LPAR)){
+                nextToken();
+                Expr lhs = parseExpr();
+                expect(TokenClass.RPAR);
+                return lhs;
+            }else{
+                //returned Integer shouldnt be here
+                error(TokenClass.LPAR);
+                nextToken();
+                return null;
+            }
+        }else{
+            error(TokenClass.CHAR_LITERAL);
+            nextToken();
+            return null;
+        }
+
+    }
+
 
     private Expr parseExp() {
         if (accept(TokenClass.LPAR)) {
@@ -464,7 +707,7 @@ public class Parser {
                 //function call
                 parseFuncCall();
             } else {
-                // not function so we consume identifier
+                // not function so we consume identifier  // .field
                 nextToken();
             }
             // what kind of stuff can come after a field?
