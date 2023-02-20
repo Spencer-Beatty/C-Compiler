@@ -7,7 +7,7 @@ public final class ExprStmt extends Stmt{
     public Expr expr;
 
     public ExprStmt(Expr expr){
-        expr = expr;
+        this.expr = expr;
     }
 
 

@@ -16,9 +16,19 @@ public class ASTPrinter {
                 throw new IllegalStateException("Unexpected null value");
             }
 
-            case Block ignored -> {
+            case Block b -> {
                 writer.print("Block(");
-                // to complete
+                String delimiter = "";
+                for(VarDecl vd: b.vds){
+                    writer.print(delimiter);
+                    delimiter = ",";
+                    visit(vd);
+                }
+                for(Stmt stmt: b.stmts){
+                    writer.print(delimiter);
+                    delimiter = ",";
+                    visit(stmt);
+                }
                 writer.print(")");
             }
 
@@ -60,16 +70,147 @@ public class ASTPrinter {
             }
 
             case (BaseType bt) -> {
-                // to complete ...
+                writer.print(bt);
             }
 
             case (StructTypeDecl std) -> {
-                // to complete
+                writer.print("StructTypeDecl(");
+                visit(std.structType);
+                for(VarDecl vd : std.vds){
+                    writer.print(",");
+                    visit(vd);
+                }
+                writer.print(")");
             }
-            default -> {
+            case (StructType structType) -> {
+                writer.print("StructType(");
+                writer.print(structType.structType);
+                writer.print(")");
+            }
+
+            // to complete ...
+            case IntLiteral intLiteral -> {
+                writer.print("IntLiteral(");
+                writer.print(intLiteral.intLiteral);
+                writer.print(")");
+            }
+            case While aWhile -> {
+                writer.print("While(");
+                visit(aWhile.expr);
+                writer.print(",");
+                visit(aWhile.stmt);
+                writer.print(")");
+            }
+            case Assign assign -> {
+                writer.print("Assign(");
+                visit(assign.expr1);
+                writer.print(",");
+                visit(assign.expr2);
+                writer.print(")");
+            }
+            case If anIf -> {
+                writer.print("If(");
+                visit(anIf.expr);
+                writer.print(",");
+                visit(anIf.stmt1);
+                if(anIf.stmt2!=null)
+                {
+                    writer.print(",");
+                    visit(anIf.stmt2);
+                }
+                writer.print(")");
+            }
+            case BinOp binOp -> {
+                writer.print("BinOp(");
+                visit(binOp.lhs);
+                writer.print(",");
+                writer.print(binOp.op.toString());
+                writer.print(",");
+                visit(binOp.rhs);
+                writer.print(")");
 
             }
-            // to complete ...
+            case TypeCastExpr typeCastExpr -> {
+                writer.print("TypeCastExpr(");
+                visit(typeCastExpr.type);
+                writer.print(",");
+                visit(typeCastExpr.expr);
+                writer.print(")");
+            }
+            case ChrLiteral chrLiteral -> {
+                writer.print("ChrLiteral(");
+                writer.print(chrLiteral.chrLiteral);
+                writer.print(")");
+            }
+            case ValueAtExpr valueAtExpr -> {
+                writer.print("ValueAtExpr(");
+                visit(valueAtExpr.expr);
+                writer.print(")");
+            }
+            case FunCallExpr funCallExpr -> {
+                writer.print("FunCallExpr(");
+                writer.print(funCallExpr.name);
+                for(Expr expr : funCallExpr.exprs){
+                    writer.print(",");
+                    visit(expr);
+                }
+                writer.print(")");
+
+
+            }
+            case Return aReturn -> {
+                writer.print("Return(");
+                if(aReturn.expr != null){
+                    visit(aReturn.expr);
+                }
+                writer.print(")");
+            }
+            case ArrayType arrayType -> {
+                writer.print("ArrayType(");
+                visit(arrayType.type);
+                writer.print(",");
+                writer.print(arrayType.length);
+                writer.print(")");
+            }
+            case FieldAccessExpr fieldAccessExpr -> {
+                writer.print("FieldAccess(");
+                visit(fieldAccessExpr.expr);
+                writer.print(",");
+                writer.print(fieldAccessExpr.field);
+                writer.print(")");
+            }
+            case SizeOfExpr sizeOfExpr -> {
+                writer.print("SizeOfExpr(");
+                visit(sizeOfExpr.type);
+                writer.print(")");
+            }
+            case ExprStmt exprStmt -> {
+                writer.print("ExprStmt(");
+                visit(exprStmt.expr);
+                writer.print(")");
+            }
+            case ArrayAccessExpr arrayAccessExpr -> {
+                writer.print("ArrayAccessExpr(");
+                visit(arrayAccessExpr.name);
+                writer.print(",");
+                visit(arrayAccessExpr.index);
+                writer.print(")");
+            }
+            case AddressOfExpr addressOfExpr -> {
+                writer.print("AddressOfExpr(");
+                visit(addressOfExpr.expr);
+                writer.print(")");
+            }
+            case StrLiteral strLiteral -> {
+                writer.print("StrLiteral(");
+                writer.print(strLiteral.strLiteral);
+                writer.print(")");
+            }
+            case PointerType pointerType -> {
+                writer.print("pointerType(");
+                visit(pointerType.type);
+                writer.print(")");
+            }
         }
 
     }

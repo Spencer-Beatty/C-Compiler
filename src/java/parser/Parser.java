@@ -252,15 +252,23 @@ public class Parser {
 
     private VarDecl parseVarDecl(){
         Type type = parseType();
-        String name = token.data;
+        int length;
         // if name is not an identifier then error will be raised
-        expect(TokenClass.IDENTIFIER);
-        while(accept(TokenClass.LSBR)){
+        if(accept(TokenClass.LSBR)){
             // expect [ INT_LITERAL ]
             nextToken();
-            expect(TokenClass.INT_LITERAL);
+            if(token.tokenClass == TokenClass.INT_LITERAL) {
+                length = Integer.parseInt(token.data);
+                nextToken();
+            }else{
+                error(TokenClass.INT_LITERAL);
+                length = -1000;
+            }
             expect(TokenClass.RSBR);
+            type = new ArrayType(type,length);
         }
+        String name = token.data;
+        expect(TokenClass.IDENTIFIER);
         expect(TokenClass.SC);
         return new VarDecl(type,name);
 
@@ -484,7 +492,6 @@ public class Parser {
         // right to left associative, use recursion
         // & * (type) + -
         Expr rhs;
-        if(accept(TokenClass.AND,TokenClass.ASTERIX,TokenClass.LPAR,TokenClass.PLUS,TokenClass.MINUS)){
             if(token.tokenClass==TokenClass.AND){
                 nextToken();
                 rhs = parsePre();
@@ -513,14 +520,13 @@ public class Parser {
                 Expr zero = new IntLiteral(0);
                 rhs = parsePre();
                 return new BinOp(zero, Op.PLUS, rhs);
-            } else{ // MINUS
+            } else if(token.tokenClass == TokenClass.MINUS){ // MINUS
                 // indicating -a
                 nextToken();
                 Expr zero = new IntLiteral(0);
                 rhs = parsePre();
                 return new BinOp(zero, Op.MINUS, rhs);
             }
-        }
         // rejected by the accept
         rhs = parseAttribute();
         return rhs;
@@ -570,40 +576,44 @@ public class Parser {
         return lhs;
     }
     // precedence level 0
-    private Expr parseImmediate(){
+    private Expr parseImmediate() {
+        // note that we will need a way for empty to be passed afterwords.
+        // 1 solution: rewrite everything with parseExprPrime
+        // 2 solution: have global bool gate, expr parsed
         //identifier should be impossible
-        if(accept(TokenClass.INT_LITERAL,TokenClass.IDENTIFIER, TokenClass.CHAR_LITERAL, TokenClass.STRING_LITERAL, TokenClass.LPAR)){
-            if(accept(TokenClass.INT_LITERAL)){
-                Expr lhs = new IntLiteral(Integer.parseInt(token.data));
-                nextToken();
-                return lhs;
-            }
-            if(accept(TokenClass.CHAR_LITERAL)){
-                Expr lhs = new ChrLiteral(token.data.charAt(0));
-                nextToken();
-                return lhs;
-            }else if(accept(TokenClass.STRING_LITERAL)){
-                Expr lhs = new StrLiteral(token.data);
-                nextToken();
-                return lhs;
-            }else if(accept(TokenClass.LPAR)){
-                nextToken();
-                Expr lhs = parseExpr();
-                expect(TokenClass.RPAR);
-                return lhs;
-            }else{
-                //returned Integer shouldnt be here
-                error(TokenClass.LPAR);
-                nextToken();
-                return null;
-            }
+        if(accept(TokenClass.LPAR)){
+            nextToken();
+            Expr lhs = parseExpr();
+            // flawed logic, becuase when RPAR is encountered in parseExpr();
+            // it cannot be proccessed; this is where we need parse expr ';
+            expect(TokenClass.RPAR);
+            return lhs;
+        }else if (accept(TokenClass.INT_LITERAL)) {
+            Expr lhs = new IntLiteral(Integer.parseInt(token.data));
+            nextToken();
+            return lhs;
+        } else if (accept(TokenClass.CHAR_LITERAL)) {
+            Expr lhs = new ChrLiteral(token.data.charAt(0));
+            nextToken();
+            return lhs;
+        } else if (accept(TokenClass.STRING_LITERAL)) {
+            Expr lhs = new StrLiteral(token.data);
+            nextToken();
+            return lhs;
         }else{
-            error(TokenClass.CHAR_LITERAL);
+            error(TokenClass.LPAR);
             nextToken();
             return null;
         }
 
     }
+
+
+
+
+
+
+
 
 
     private Expr parseExp() {
