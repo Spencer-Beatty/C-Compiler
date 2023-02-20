@@ -5,9 +5,17 @@ import java.io.PrintWriter;
 public class ASTPrinter {
 
     private final PrintWriter writer;
+    private String tab = "";
 
     public ASTPrinter(PrintWriter writer) {
             this.writer = writer;
+    }
+
+    private void tabInc(){
+        tab = tab + "\t";
+    }
+    private void tabDec(){
+        tab = tab.replaceFirst("\t","");
     }
 
     public void visit(ASTNode node) {
@@ -17,19 +25,23 @@ public class ASTPrinter {
             }
 
             case Block b -> {
-                writer.print("Block(");
+                tabInc();
+                writer.print("\n"+tab+"Block(");
+                tabInc();
                 String delimiter = "";
                 for(VarDecl vd: b.vds){
                     writer.print(delimiter);
-                    delimiter = ",";
+                    delimiter = ",\n"+tab;
                     visit(vd);
                 }
                 for(Stmt stmt: b.stmts){
                     writer.print(delimiter);
-                    delimiter = ",";
+                    delimiter = ",\n"+tab;
                     visit(stmt);
                 }
-                writer.print(")");
+                tabDec();
+                writer.print("\n"+tab+")");
+
             }
 
             case FunDecl fd -> {
@@ -207,7 +219,7 @@ public class ASTPrinter {
                 writer.print(")");
             }
             case PointerType pointerType -> {
-                writer.print("pointerType(");
+                writer.print("PointerType(");
                 visit(pointerType.type);
                 writer.print(")");
             }

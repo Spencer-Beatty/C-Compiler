@@ -397,7 +397,7 @@ public class Parser {
         while(accept(TokenClass.LOGOR)){
             nextToken();
             Expr rhs = parseAnd();
-            lhs = new BinOp(lhs, Op.LOGOR, rhs);
+            lhs = new BinOp(lhs, Op.OR, rhs);
         }
         return lhs;
     }
@@ -407,7 +407,7 @@ public class Parser {
         while(accept(TokenClass.LOGAND)){
             nextToken();
             Expr rhs = parseEquality();
-            lhs = new BinOp(lhs, Op.LOGAND, rhs);
+            lhs = new BinOp(lhs, Op.AND, rhs);
         }
         return lhs;
     }
@@ -456,9 +456,9 @@ public class Parser {
         while(accept(TokenClass.PLUS, TokenClass.MINUS)){
             Op op;
             if(token.tokenClass == TokenClass.PLUS){
-                op = Op.PLUS;
+                op = Op.ADD;
             }else{
-                op = Op.MINUS;
+                op = Op.SUB;
             }
             nextToken();
 
@@ -473,10 +473,10 @@ public class Parser {
         while(accept(TokenClass.ASTERIX, TokenClass.DIV, TokenClass.REM)){
             Op op;
             if(token.tokenClass == TokenClass.ASTERIX){
-                op = Op.ASTERIX; // think about other cases for * could they arise? a* + b
+                op = Op.MUL; // think about other cases for * could they arise? a* + b
                                     // they are prevented by left hand going forward first
             }else if(token.tokenClass == TokenClass.REM){
-                op = Op.REM;
+                op = Op.MOD;
             }else{
                 op = Op.DIV;
             }
@@ -519,13 +519,13 @@ public class Parser {
                 nextToken();
                 Expr zero = new IntLiteral(0);
                 rhs = parsePre();
-                return new BinOp(zero, Op.PLUS, rhs);
+                return new BinOp(zero, Op.ADD, rhs);
             } else if(token.tokenClass == TokenClass.MINUS){ // MINUS
                 // indicating -a
                 nextToken();
                 Expr zero = new IntLiteral(0);
                 rhs = parsePre();
-                return new BinOp(zero, Op.MINUS, rhs);
+                return new BinOp(zero, Op.SUB, rhs);
             }
         // rejected by the accept
         rhs = parseAttribute();
