@@ -3,11 +3,11 @@ package ast;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class TypeCastExpr extends Expr {
+public final class TypecastExpr extends Expr {
     public Type type;
     public Expr expr;
 
-    public TypeCastExpr(Type type, Expr expr){
+    public TypecastExpr(Type type, Expr expr){
         this.type = type;
         this.expr = expr;
     }
