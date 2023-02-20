@@ -513,7 +513,7 @@ public class Parser {
                 // should find RPAR
                 expect(TokenClass.RPAR);
                 rhs = parsePre();
-                return new TypeCastExpr(type, rhs);
+                return new TypecastExpr(type, rhs);
             } else  if(token.tokenClass==TokenClass.PLUS){
                 // indicating +a
                 nextToken();

@@ -142,11 +142,11 @@ public class ASTPrinter {
                 writer.print(")");
 
             }
-            case TypeCastExpr typeCastExpr -> {
-                writer.print("TypeCastExpr(");
-                visit(typeCastExpr.type);
+            case TypecastExpr typecastExpr -> {
+                writer.print("TypecastExpr(");
+                visit(typecastExpr.type);
                 writer.print(",");
-                visit(typeCastExpr.expr);
+                visit(typecastExpr.expr);
                 writer.print(")");
             }
             case ChrLiteral chrLiteral -> {
