@@ -1,7 +1,6 @@
 package ast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public final class FunDecl extends Decl {
