@@ -128,9 +128,9 @@ A new package has been added under `gen/`. This package should be used to store 
  * The class `gen.Test` shows you an example on how to emit instructions.
 
 Another new package has been added under `gen/asm`.
-This package defines the components of assembly programs as well as a visitor interface for examining assembly programs:
+This package defines the components of assembly programs:
  * `gen.asm.Register` represents registers and defines most MIPS32 registers in its `Arch` subclass.
- * `gen.AssemblyProgram` represents assembly programs that consist of several `Section` instances.
+ * `gen.asm.AssemblyProgram` represents assembly programs that consist of several `Section` instances.
    `AssemblyProgram`'s `emit` methods provide a fluent, type-safe instruction generation API.
  * `gen.asm.AssemblyParser` can parse textual assembly programs as `gen.AssemblyProgram` instances.
    `AssemblyParser` restricts itself to the subset of assembly programs that the compiler can output.
