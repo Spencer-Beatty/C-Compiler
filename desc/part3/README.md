@@ -137,7 +137,6 @@ This package defines the components of assembly programs as well as a visitor in
  * `gen.asm.AssemblyItem` has subclasses for the items that appear in an assembly program: `Label`, `Instruction`, `Directive` and `Comment`.
  * `gen.asm.Instruction` has subclasses that represent families of instructions with similar behavior.
  * `gen.asm.OpCode` enumerates MIPS opcodes.
- * `gen.asm.AssemblyItemVisitor` offers a visitor interface for `AssemblyItem`.
 
 **Note:** Do not modify the files under `gen/asm`.
 For grading reasons, we may roll back these files to the original version we provided.
