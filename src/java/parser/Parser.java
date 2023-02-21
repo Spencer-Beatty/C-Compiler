@@ -192,14 +192,9 @@ public class Parser {
 
             expect(TokenClass.LBRA);
             // at least 1 var decl
-            if(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
+
+            while(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
                 vds.add(parseVarDecl());
-                while(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
-                    vds.add(parseVarDecl());
-                }
-            }else{
-                error(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT);
-                nextToken();
             }
             expect(TokenClass.RBRA);
             expect(TokenClass.SC);
