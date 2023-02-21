@@ -144,7 +144,8 @@ public class Parser {
                 // fundecl where type = structtype (struct ident) followed by ident
             }else if(token.tokenClass==TokenClass.STRUCT &&
                     lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
-                    lookAhead(2).tokenClass == TokenClass.IDENTIFIER) {
+                    lookAhead(2).tokenClass == TokenClass.IDENTIFIER &&
+                    lookAhead(3).tokenClass == TokenClass.LPAR) {
                 decls.add(parseFunDecl());
                 // vardecl
             }else{
@@ -236,7 +237,7 @@ public class Parser {
             params.add(new VarDecl(type, token.data));
             expect(TokenClass.IDENTIFIER);
         }
-        while(! accept(TokenClass.RPAR) ){
+        while(! accept(TokenClass.RPAR,TokenClass.EOF) ){
             expect(TokenClass.COMMA);
             Type type = parseType();
             params.add(new VarDecl(type, token.data));
