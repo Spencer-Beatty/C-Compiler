@@ -22,10 +22,12 @@ public class ProgramCodeGen extends CodeGen {
         allocator.visit(p);
 
         // generate the code for each function
-        FunCodeGen fcg = new FunCodeGen(asmProg);
         p.decls.forEach((d) -> {
             switch(d) {
-                case FunDecl fd -> fcg.visit(fd);
+                case FunDecl fd -> {
+                    FunCodeGen fcg = new FunCodeGen(asmProg);
+                    fcg.visit(fd);
+                }
                 default -> {}// nothing to do
             }});
     }
