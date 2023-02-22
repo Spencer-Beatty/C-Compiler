@@ -192,10 +192,15 @@ public class Parser {
             ArrayList<VarDecl> vds = new ArrayList<>();
 
             expect(TokenClass.LBRA);
-            // at least 1 var decl
 
-            while(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
+            if(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
                 vds.add(parseVarDecl());
+                while(accept(TokenClass.INT,TokenClass.CHAR,TokenClass.VOID,TokenClass.STRUCT)){
+                    vds.add(parseVarDecl());
+                }
+            }else{
+                error(TokenClass.INT);
+                nextToken();
             }
             expect(TokenClass.RBRA);
             expect(TokenClass.SC);
