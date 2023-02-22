@@ -55,12 +55,12 @@ public final class CodeGenerator {
         ProgramCodeGen progGen = new ProgramCodeGen(asmProgWithVirtualRegs);
         progGen.generate(astProgram);
 
-        // run the register naive allocator which remove the virtual registers
-        AssemblyProgram asmProgNoVirtualRegs = registerAllocator.apply(asmProgWithVirtualRegs);
+        // run the register allocator which remove the virtual registers (unless there is no register allocator)
+        AssemblyProgram asmProgAfterRegAlloc = registerAllocator.apply(asmProgWithVirtualRegs);
 
         // print the assembly program
         PrintWriter writer = new PrintWriter(outputFile);
-        asmProgNoVirtualRegs.print(writer);
+        asmProgAfterRegAlloc.print(writer);
         writer.close();
     }
 }
