@@ -68,7 +68,23 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 				switch (sym){
 					// null is good
 					case null -> {
-						current.put(new VarSymbol(vd));
+						switch(vd.type){
+							case null -> { error(vd.name + " has no type");}
+							case StructType st -> {
+								Symbol sd =  current.lookup(st.name);
+								switch (sd) {
+									case null -> { error("struct not defined");}
+									case StructSymbol ss ->{
+										st.fields = ss.sd.fields;
+										current.put(new VarSymbol(vd));
+									}default -> error("strange ast");
+								}
+							}
+							default -> {
+								current.put(new VarSymbol(vd));
+							}
+						}
+
 					}
 					// not null means declared within scope
 					default -> {
@@ -82,9 +98,15 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 			case (VarExpr v) -> {
 				Symbol sym = current.lookup(v.name);
 				switch (sym){
+					case null -> {
+						error(v.name + " not defined");
+					}
 					// we want to find something in global scope
 					case VarSymbol vs -> {
 						v.vd = vs.vd;
+					}
+					case StructSymbol sd ->{
+						visit(v.type); // we want to store data in type
 					}
 					case default -> {
 						error("Variable " + v.name + " not defined within scope");
@@ -96,12 +118,14 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 				// check for previous declaration, if null add new symbol
 				// make sure fields are not declared twice, lookup every time
 				// initial lookup for struct
-				Symbol sym = current.lookupCurrent(std.name);
+				Symbol sym = current.lookupCurrent(std.structType.name);
 				switch (sym){
 					// we dont want to find anything
 					case null -> {
 						// name not defined, now watch out for double field definition
 						// create new scope
+						// need to add name to the scope
+						current.put(new StructSymbol(std));
 						Scope scope = new Scope(current);
 
 						// temporary scope
@@ -123,26 +147,96 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 
 			}
 
-			case (Type t) -> {}
+
+			case (Type t) -> {
+				// deal with struct expression linking to struct;
 				// check for struct type? think more about this
+
+			}
+
 			case (FunCallExpr fc) -> {
 				Symbol sym = current.lookup(fc.name);
 				switch (sym){
 					// we want to find something in global scope
+					case null -> {
+						error("Function " + fc.name + " not defined within scope");
+					}
 					case FunSymbol f -> {
 						fc.fd = f.fd;
 					}
 					case default -> {
-						error("Function " + fc.name + " not defined within scope");
+						error("Strange lookup");
 					}
 				}
 
 
 			}
-			default -> {
+			case (ArrayAccessExpr a) -> {
+				// visit will check for declaration
+				// have to visit because expression
+
+				// if we get to this point
+				if( a.name != null){
+					visit(a.name);
+					a.type = a.name.type;
+				}
 
 			}
+			case (ExprStmt e) -> {
+				visit(e.expr);
+			}
+
 			// to complete ...
+			case SizeOfExpr sizeOfExpr -> {
+
+			}
+			case ValueAtExpr valueAtExpr -> {
+				visit(valueAtExpr.expr);
+
+			}
+			case Assign assign -> {
+				visit(assign.expr1);
+				visit(assign.expr2);
+			}
+			case If anIf -> {
+				visit(anIf.expr);
+				visit(anIf.stmt1);
+				visit(anIf.stmt2);
+			}
+			case TypecastExpr typecastExpr -> {
+				visit(typecastExpr.expr);
+			}
+			case AddressOfExpr addressOfExpr -> {
+				visit(addressOfExpr.expr);
+			}
+			case BinOp binOp -> {
+				visit(binOp.lhs);
+				visit(binOp.rhs);
+			}
+			case While aWhile -> {
+				visit(aWhile.stmt);
+				visit(aWhile.expr);
+			}
+			case Return aReturn -> {
+				// have to be careful with optional arguments
+				if(aReturn.expr != null){
+					visit(aReturn.expr);
+				}
+
+			}
+
+			case FieldAccessExpr fieldAccessExpr -> {
+				visit(fieldAccessExpr.expr);
+
+				// check if field actually exists
+				// no way to reach the structure
+				// must happen in type analysis
+
+			}
+
+			case default -> {}
+
+
 		};
 
 	}

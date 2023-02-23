@@ -1,19 +1,14 @@
-
-
-
-struct node {
-    int a;
-    int b;
-    char c;
-    void d;
-    //int a[1];
-    struct node d;
+struct a {
+    int i;
+    int j;
 };
 
 void main(){
+    struct a b;
+    //b.t;
     int i;
-    int i;
-    a = b+1;
-     a = b;
+    char j;
+    b.i = i + i;
+    b.j = i + j;
+    b.j = j;
 }
-

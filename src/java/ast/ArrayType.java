@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ArrayType implements Type {
-    Type type;
-    int length;
+    public Type type;
+    public int length;
 
     public ArrayType(Type type, int length){
         this.type = type;

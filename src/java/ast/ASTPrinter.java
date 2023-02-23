@@ -96,7 +96,7 @@ public class ASTPrinter {
             }
             case (StructType structType) -> {
                 writer.print("StructType(");
-                writer.print(structType.structType);
+                writer.print(structType.name);
                 writer.print(")");
             }
 

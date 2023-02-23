@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class StructType implements Type {
-    String structType;
+    public String name;
+    public List<VarDecl> fields;
     public StructType(String structType){
-        this.structType = structType;
+        this.name = structType;
     }
     @Override
     public List<ASTNode> children() {
