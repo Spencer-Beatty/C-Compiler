@@ -58,8 +58,13 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				yield new ArrayType(BaseType.CHAR, length);
 			}
 			case (VarExpr v) -> {
-				v.type = v.vd.type;
-				yield v.vd.type;
+				if(v.vd!=null){
+					v.type = v.vd.type;
+					yield v.vd.type;
+				}else{
+					yield BaseType.UNKNOWN;
+				}
+
 			}
 			case (FunCallExpr fc) -> {
 				// if all expressions are of correct type, then fc is of type of declaration
