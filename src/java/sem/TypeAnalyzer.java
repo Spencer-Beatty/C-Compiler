@@ -29,14 +29,15 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 			//------------------
 			// Declarations
 			//------------------
-			/*
+/*
 			case (VarDecl vd) -> {
-
+				if(vd.type == BaseType.VOID)
+					error("variable declaration " + vd.name + " has type void");
 				yield BaseType.NONE;
 			}
 
 			case FunDecl fd -> {
-				// to complete
+
 				yield BaseType.NONE;
 			}
 
@@ -53,8 +54,8 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 
 			}
 			case (VarExpr v) -> {
-				// to complete
-				yield BaseType.UNKNOWN; // to change
+				v.type = v.vd.type;
+				yield v.vd.type;
 			}
 			case (FunCallExpr fc) -> {
 
@@ -114,8 +115,8 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 			case (Type t) -> {
 				yield t;
 			}
-			*/
 
+*/
 			default -> {
 				yield null;
 			}
