@@ -1,16 +1,11 @@
 
-int i;
 
-struct node_t n;
 
-struct node_t {
+struct node {
     int a;
+    int b;
     char c;
+    void d;
+    //int a[1];
+    struct node d;
 };
-
-struct node_t{
-
-};
-struct node_t a(){
-
-}

@@ -1,5 +1,4 @@
-Program(VarDecl(INT,i),VarDecl(StructType(node_t),n),StructTypeDecl(StructType(node_t),VarDecl(INT,a),VarDecl(CHAR,c)),
-StructTypeDecl(StructType(node_t)),
-FunDecl(StructType(node_t),a,
-	Block(
+Program(VarDecl(ArrayType(ArrayType(INT,1),2),a),FunDecl(VOID,main,
+	Block(ExprStmt(Assign(ArrayAccessExpr(ArrayAccessExpr(VarExpr(a),IntLiteral(1)),BinOp(IntLiteral(2),ADD,IntLiteral(2))),IntLiteral(1))),
+		ExprStmt(ArrayAccessExpr(ArrayAccessExpr(ArrayAccessExpr(VarExpr(a),IntLiteral(100)),Assign(VarExpr(a),VarExpr(b))),VarExpr(c)))
 	)))

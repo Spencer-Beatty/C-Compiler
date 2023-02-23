@@ -5,9 +5,9 @@ import java.util.List;
 
 public final class PointerType implements Type{
     public Type type;
-    public List<String> pointers;
+    public int pointers;
 
-    public PointerType(Type type, ArrayList<String> pointers){
+    public PointerType(Type type, int pointers){
         this.type = type;
         this.pointers = pointers;
     }

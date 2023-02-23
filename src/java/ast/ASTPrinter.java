@@ -88,7 +88,7 @@ public class ASTPrinter {
             case (StructTypeDecl std) -> {
                 writer.print("StructTypeDecl(");
                 visit(std.structType);
-                for(VarDecl vd : std.vds){
+                for(VarDecl vd : std.fields){
                     writer.print(",");
                     visit(vd);
                 }
