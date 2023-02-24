@@ -123,9 +123,6 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 					case VarSymbol vs -> {
 						v.vd = vs.vd;
 					}
-					case StructSymbol sd ->{
-						visit(v.type); // we want to store data in type
-					}
 					case default -> {
 						error("Variable " + v.name + " not defined within scope");
 					}

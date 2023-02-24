@@ -1,5 +1,5 @@
 
-/*struct a{
+struct a{
     int i;
 };
 
@@ -12,9 +12,9 @@ void main(){
     foo().i;
 
 }
-*/
+
 int bane(){
-    int a[1][2];
-    return a[1][2];
+    int b[1][2];
+    return b[1][2];
 }
 

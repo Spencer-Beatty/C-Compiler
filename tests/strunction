@@ -1,4 +1,12 @@
-struct a strunction(){
+struct a {
+    int b;
+};
 
-    c = -(a < b) + & a;
+struct a strunction(){
+    int c;
+    struct a b;
+    c = 4;
+
+    a + b;
+    return a;
 }

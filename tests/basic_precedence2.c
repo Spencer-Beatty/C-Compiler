@@ -6,5 +6,7 @@ void main(){
     // binop(exp, (binop(exp,exp)));
     //exp * ( exp ) ;
     1 + ( 2 * 3 );
+    1;
+
 
 }
