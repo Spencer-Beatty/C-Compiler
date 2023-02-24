@@ -100,19 +100,26 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 			// Expressions
 			//------------------
 			case (IntLiteral i) -> {
+				i.type = BaseType.CHAR;
 				yield BaseType.INT;
 			}
-			case (ChrLiteral i) -> {
+			case (ChrLiteral c) -> {
+				c.type = BaseType.CHAR;
 				yield BaseType.CHAR;
 			}
-			case (StrLiteral i) -> {
-				int length = i.strLiteral.length() + 1;
-				yield new ArrayType(BaseType.CHAR, length);
+			case (StrLiteral s) -> {
+				int length = s.strLiteral.length() + 1;
+				Type t1 = new ArrayType(BaseType.CHAR, length);
+				s.type = t1;
+				yield t1;
 			}
 			case (VarExpr v) -> {
 				// if v.vd is not initializaed then problem lies in name analyzer
+
 				v.type = v.vd.type;
 				yield v.vd.type;
+
+
 
 			}
 			case (FunCallExpr fc) -> {
@@ -168,6 +175,7 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						binOp.type = BaseType.INT;
 						yield binOp.type;
 					} else {
+						binOp.type = BaseType.UNKNOWN;
 						yield BaseType.UNKNOWN;
 					}
 
@@ -183,15 +191,19 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 					}
 					case PointerType p -> {
 						if (a.index.type == BaseType.INT) {
+							a.type = p.type;
 							yield p.type;
 						} else {
+							a.type = BaseType.UNKNOWN;
 							yield BaseType.UNKNOWN; // not sure if this should be unknown or none
 						}
 					}
 					case ArrayType ar -> {
 						if (a.index.type == BaseType.INT) {
+							a.type = ar.type;
 							yield ar.type;
 						} else {
+							a.type = BaseType.UNKNOWN;
 							yield BaseType.UNKNOWN;
 						}
 
@@ -227,6 +239,7 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						}
 						if (exists) {
 							// indicates vd was also initialized
+							f.type = vd.type;
 							yield vd.type;
 						} else {
 							error("field " + f.field + " does not exist within struct");
@@ -262,7 +275,9 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 			}
 			case (AddressOfExpr a) -> {
 				Type t1 = visit(a.expr);
-				yield new PointerType(t1, 1);
+				Type pt = new PointerType(t1, 1);
+				a.type = pt;
+				yield pt;
 			}
 			case (SizeOfExpr s) -> {
 				yield BaseType.INT;
@@ -292,7 +307,9 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						yield p1;
 					}
 					case PointerType pt -> {
-						yield new PointerType(pt.type, 1);
+						Type p1 = new PointerType(pt.type, 1);
+						t.type = p1;
+						yield p1;
 					}
 					default -> {
 						error("didnt find type to cast to");
@@ -382,7 +399,18 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 			case(Return r) -> {
 				// return nothing or else?
 				// link up return to function
-				yield BaseType.NONE;
+				if(r.expr == null && r.fd.type == BaseType.VOID){
+					// no return
+					yield BaseType.NONE;
+				}else{
+					if(CompareType(visit(r.expr),r.fd.type)){
+						yield r.fd.type;
+					}
+				}
+				error("Return type of " + r.fd.name.toString() + "does not match function decl");
+
+				yield BaseType.UNKNOWN;
+
 			}
 			//----------------
 			// Struct Decl

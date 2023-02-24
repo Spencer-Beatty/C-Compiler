@@ -20,6 +20,7 @@ public abstract class BaseSemanticAnalyzer  {
 	protected void error(String message) {
 		System.err.println("semantic error: " + message);
 		errors++;
+		System.exit(240);
 	}
 
 }

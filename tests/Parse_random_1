@@ -1,4 +1,4 @@
-void prog(){
+/*void prog(){
 
 int x;
 int* z;
@@ -7,7 +7,7 @@ int* z;
 }
 int foo (int *y) {
 return *y;
-}
+}*/
 
 int main () {
 *z = 1;

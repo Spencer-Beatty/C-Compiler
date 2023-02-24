@@ -5,6 +5,7 @@ import java.util.List;
 
 public final class Return extends Stmt{
     public Expr expr;
+    public FunDecl fd;
 
     public Return(Expr expr){
         this.expr = expr;

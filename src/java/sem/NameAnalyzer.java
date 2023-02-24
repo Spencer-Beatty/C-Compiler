@@ -33,7 +33,9 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 				switch (sym){
 					// null is good
 					case null -> {
-						current.put(new FunSymbol(fd));
+						FunSymbol fun = new FunSymbol(fd);
+						current.put(fun);
+						current.function = fun;
 						// think about current variables declared in block
 						// here a will represent variable declarations in the function
 						// plus the variables declarations in the block
@@ -45,11 +47,13 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 						a.addAll(fd.block.vds);
 						fd.block.vds = a;
 						visit(fd.block);
+						current.function = null;
 					}
 					// not null means declared within scope
 					default -> {
 						error("Function " + fd.name + " already declared within this scope");
-						break;
+
+
 					}
 				}
 
@@ -237,6 +241,12 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 			}
 			case Return aReturn -> {
 				// have to be careful with optional arguments
+				if(current.function != null){
+					aReturn.fd = current.function.fd;
+				}else{
+					error("Return called outside of function");
+				}
+
 				if(aReturn.expr != null){
 					visit(aReturn.expr);
 				}

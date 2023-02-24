@@ -10,14 +10,19 @@ import java.util.Map;
 public class Scope {
 	private Scope outer;
 	private Map<String, Symbol> symbolTable;
+	public FunSymbol function;
 	
 	public Scope(Scope outer) { 
 		this.outer = outer;
+		if(outer != null && outer.function != null){
+			function = outer.function;
+		}
 		symbolTable = new HashMap<String, Symbol>();
 	}
 	
 	public Scope() {
 		this(null);
+		function = null;
 		symbolTable = new HashMap<String, Symbol>();
 
 		// when outer scope is created add global functions
