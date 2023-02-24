@@ -184,12 +184,14 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 
 			case (ArrayAccessExpr a) -> {
 				// should there be a differnt case for pointer
+				a.name.type = visit(a.name);
 				switch (a.name.type) {
 					case null -> {
 						error("Array access expr has no type");
 						yield BaseType.UNKNOWN;
 					}
 					case PointerType p -> {
+						a.index.type = visit(a.index);
 						if (a.index.type == BaseType.INT) {
 							a.type = p.type;
 							yield p.type;
@@ -199,6 +201,7 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						}
 					}
 					case ArrayType ar -> {
+						a.index.type = visit(a.index);
 						if (a.index.type == BaseType.INT) {
 							a.type = ar.type;
 							yield ar.type;

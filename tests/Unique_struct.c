@@ -13,8 +13,8 @@ void main(){
 
 }
 */
-int* bane(){
-    int a[];
-    return (int*) a;
+int bane(){
+    int a[1][2];
+    return a[1][2];
 }
 
