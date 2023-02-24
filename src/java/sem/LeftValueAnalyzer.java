@@ -13,6 +13,7 @@ public class LeftValueAnalyzer extends BaseSemanticAnalyzer{
                     }
             case Assign a -> {
                 // expr1 = lhs
+                visit(a.expr2);
                 switch (a.expr1){
                     case null -> {
                         break;

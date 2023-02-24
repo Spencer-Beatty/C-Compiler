@@ -70,7 +70,7 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 
 			case (VarDecl vd) -> {
 				// Just lookup within current, because variable can be shadowed if current == null
-				Symbol sym = current.lookup(vd.name);
+				Symbol sym = current.lookupCurrent(vd.name);
 				if( sym != null){
 					error("Variable already declared within scope");
 				}else{

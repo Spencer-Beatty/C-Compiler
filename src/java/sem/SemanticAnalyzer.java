@@ -14,6 +14,10 @@ public class SemanticAnalyzer {
 		rc.visit(prog);
 		errors += rc.getErrorCount();
 
+		StructFieldAnalyzer st = new StructFieldAnalyzer();
+		st.visit(prog);
+		errors += st.getErrorCount();
+
 		TypeAnalyzer tc = new TypeAnalyzer();
 		tc.visit(prog);
 		errors += tc.getErrorCount();

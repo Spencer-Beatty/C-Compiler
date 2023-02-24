@@ -9,6 +9,6 @@ void main(){
     int i;
     char j;
     b.i = i + i;
-    b.j = i + j;
-    b.j = j;
+    b.j = i + (int) j;
+    b.j = (int) j;
 }

@@ -1,12 +1,12 @@
+struct struct1 {
+    int x;
+};
 
-void main(){
-    // exp
-    // binop(exp, exp)
-    // binop(exp, (exp))
-    // binop(exp, (binop(exp,exp)));
-    //exp * ( exp ) ;
-    1 + ( 2 * 3 );
-    1;
+struct struct2 {
+    struct struct1 arr[5];
+};
 
-
+void foo() {
+    struct struct2 test;
+    test.arr[3].x = 3;
 }
