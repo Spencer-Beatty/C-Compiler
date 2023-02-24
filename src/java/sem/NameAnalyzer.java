@@ -2,6 +2,7 @@ package sem;
 
 import ast.*;
 
+import java.lang.runtime.SwitchBootstraps;
 import java.util.ArrayList;
 
 public class NameAnalyzer extends BaseSemanticAnalyzer {
@@ -64,34 +65,46 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 
 			case (VarDecl vd) -> {
 				// Just lookup within current, because variable can be shadowed if current == null
-				Symbol sym = current.lookupCurrent(vd.name);
-				switch (sym){
-					// null is good
-					case null -> {
-						switch(vd.type){
-							case null -> { error(vd.name + " has no type");}
-							case StructType st -> {
-								Symbol sd =  current.lookup(st.name);
-								switch (sd) {
-									case null -> { error("struct not defined");}
-									case StructSymbol ss ->{
-										st.fields = ss.sd.fields;
-										current.put(new VarSymbol(vd));
-									}default -> error("strange ast");
+				Symbol sym = current.lookup(vd.name);
+				if( sym != null){
+					error("Variable already declared within scope");
+				}else{
+					current.put(new VarSymbol(vd));
+
+					// if struct have to link up struct decl
+					switch (vd.type) {
+						case StructType st -> {
+							Symbol sym2 = current.lookup(st.name);
+							if(sym2!=null){
+								// struct is defined
+								switch (sym2) {
+									case VarSymbol var -> {
+										switch(var.vd.type){
+											case null -> {}
+											case StructType st2 -> {
+												st.fields = st2.fields;
+											}
+											default -> {
+												error("Struct not previously defined");
+											}
+										}
+									}
+									default -> {
+										error("Struct not previously defined");
+									}
 								}
-							}
-							default -> {
-								current.put(new VarSymbol(vd));
+							}else{
+								error("Struct not previously defined");
+								// struct not defined
 							}
 						}
+						default -> {}
+					}
 
-					}
-					// not null means declared within scope
-					default -> {
-						error("Variable " + vd.name + " already declared within this scope");
-						break;
-					}
 				}
+
+
+
 
 			}
 
@@ -125,7 +138,8 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 						// name not defined, now watch out for double field definition
 						// create new scope
 						// need to add name to the scope
-						current.put(new StructSymbol(std));
+						std.structType.fields = std.fields;
+						current.put(new VarSymbol(new VarDecl(std.structType, std.structType.name)));
 						Scope scope = new Scope(current);
 
 						// temporary scope
@@ -163,6 +177,10 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 					}
 					case FunSymbol f -> {
 						fc.fd = f.fd;
+						// have to link parameters to parmeter declarations
+						for(Expr e : fc.exprs){
+							visit(e);
+						}
 					}
 					case default -> {
 						error("Strange lookup");

@@ -35,31 +35,33 @@ public class Scope {
 		VarDecl c = new VarDecl(BaseType.CHAR, "c");
 		VarDecl size = new VarDecl(BaseType.INT, "size");
 		Block block = new Block(new ArrayList<VarDecl>(), new ArrayList<Stmt>()); //  empty block
-		ArrayList<VarDecl> params = new ArrayList<VarDecl>();
-		params.add(s);
+		ArrayList<VarDecl> params1 = new ArrayList<VarDecl>();
+		ArrayList<VarDecl> params2 = new ArrayList<VarDecl>();
+		ArrayList<VarDecl> params3 = new ArrayList<VarDecl>();
+		ArrayList<VarDecl> params4 = new ArrayList<VarDecl>();
+		params1.add(s);
 		FunSymbol print_s = new FunSymbol(
-				new FunDecl(BaseType.VOID, "print_s",params,block));
-		params.remove(0); // remove element
-		params.add(i); // add next element
+				new FunDecl(BaseType.VOID, "print_s",params1,block));
+
+		params2.add(i);
 		FunSymbol print_i = new FunSymbol(
-				new FunDecl(BaseType.VOID, "print_i", params, block));
-		params.remove(0); // remove element
-		params.add(c); // add next element
+				new FunDecl(BaseType.VOID, "print_i", params2, block));
+
+		params3.add(c);
 		FunSymbol print_c = new FunSymbol(
-				new FunDecl(BaseType.VOID, "print_c", params, block));
-		params.remove(0); // remove element
+				new FunDecl(BaseType.VOID, "print_c", params3, block));
+
 		// next two functions take no params
-		if(!params.isEmpty()){
-			System.out.println("error params not empty");
-		}
+
+
 		FunSymbol read_c = new FunSymbol(
-				new FunDecl(BaseType.CHAR, "read_c", params, block));
+				new FunDecl(BaseType.CHAR, "read_c",  new ArrayList<VarDecl>(), block));
 		FunSymbol read_i = new FunSymbol(
-				new FunDecl(BaseType.INT, "read_i", params, block));
+				new FunDecl(BaseType.INT, "read_i",  new ArrayList<VarDecl>(), block));
 		// add back into params for mcmalloc
-		params.add(size);
+		params4.add(size);
 		FunSymbol mcmalloc = new FunSymbol(
-				new FunDecl(new PointerType(BaseType.VOID, 1),"mcmalloc", params, block));
+				new FunDecl(new PointerType(BaseType.VOID, 1),"mcmalloc", params4, block));
 
 		symbolTable.put(print_s.name, print_s);
 		symbolTable.put(print_i.name, print_i);

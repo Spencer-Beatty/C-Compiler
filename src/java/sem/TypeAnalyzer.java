@@ -4,7 +4,59 @@ import ast.*;
 
 public class TypeAnalyzer extends BaseSemanticAnalyzer {
 
-
+	private boolean CompareType(Type t1, Type t2){
+		switch (t1) {
+			case null -> {
+				return false;
+			}
+			case PointerType pt -> {
+				switch (t2) {
+					case null -> {
+						return false;
+					}
+					case PointerType pt2 -> {
+						return CompareType(pt.type,pt2.type);
+					}
+					case default ->{
+						return false;
+					}
+				}
+			}
+			case ArrayType at -> {
+				switch (t2) {
+					case null -> {
+						return false;
+					}
+					case ArrayType at2 -> {
+						return CompareType(at.type,at2.type);
+					}
+					case default ->{
+						return false;
+					}
+				}
+			}
+			case StructType st -> {
+				switch (t2){
+					case null -> {
+						return false;
+					}
+					case StructType st2 -> {
+						return st.name == st2.name;
+					}
+					case default ->{
+						return false;
+					}
+				}
+			}
+			case default ->{
+				if(t1 == t2){
+					return true;
+				}else{
+					return false;
+				}
+			}
+		}
+	}
 
 	public Type visit(ASTNode node) {
 		// define struct pass later
@@ -58,12 +110,9 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				yield new ArrayType(BaseType.CHAR, length);
 			}
 			case (VarExpr v) -> {
-				if(v.vd!=null){
-					v.type = v.vd.type;
-					yield v.vd.type;
-				}else{
-					yield BaseType.UNKNOWN;
-				}
+				// if v.vd is not initializaed then problem lies in name analyzer
+				v.type = v.vd.type;
+				yield v.vd.type;
 
 			}
 			case (FunCallExpr fc) -> {
@@ -71,10 +120,13 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				if (fc.exprs.size() != fc.fd.params.size()) error("Params size does not match exprs");
 
 				for (int i = 0; i < fc.exprs.size(); i++) {
-					if (visit(fc.exprs.get(i)) == fc.fd.type) {
+					// cant compare types with ==
+
+					if (CompareType(visit(fc.exprs.get(i)), fc.fd.params.get(i).type)) {
 						continue;
 					} else {
-						error(fc.exprs.get(i).toString() + " Not equal " + fc.fd.type.toString());
+						error(fc.name);
+						error(visit(fc.exprs.get(i)).toString() + " Not equal " + fc.fd.params.get(i).type.toString());
 					}
 				}
 				fc.type = fc.fd.type;
@@ -220,7 +272,8 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				Type t1 = visit(t.expr);
 				if (t1 == BaseType.CHAR) {
 					//char to int
-					if(t.type == BaseType.INT){
+					if(t1 == BaseType.INT){
+						t.type = BaseType.INT;
 						yield BaseType.INT;
 					}else{
 						error("unknown type to cast");
@@ -234,8 +287,9 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						yield BaseType.UNKNOWN;
 					}
 					case ArrayType ar -> {
-
-						yield new PointerType(ar.type, 1);
+						Type p1 = new PointerType(ar.type, 1);
+						t.type = p1;
+						yield p1;
 					}
 					case PointerType pt -> {
 						yield new PointerType(pt.type, 1);
