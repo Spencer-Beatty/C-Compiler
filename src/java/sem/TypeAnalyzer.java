@@ -41,7 +41,7 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						return false;
 					}
 					case StructType st2 -> {
-						return st.name == st2.name;
+						return st.name.equals(st2.name);
 					}
 					case default ->{
 						return false;
@@ -229,7 +229,6 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						// make sure field exisits within struct
 						boolean exists = false;
 						VarDecl vd = null;
-
 						for (VarDecl s : st.fields) {
 							if (s.name.equals(f.field)) {
 								exists = true;
@@ -287,7 +286,7 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				Type t1 = visit(t.expr);
 				if (t1 == BaseType.CHAR) {
 					//char to int
-					if(t1 == BaseType.INT){
+					if(t.type == BaseType.INT){
 						t.type = BaseType.INT;
 						yield BaseType.INT;
 					}else{
@@ -399,15 +398,16 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 			case(Return r) -> {
 				// return nothing or else?
 				// link up return to function
-				if(r.expr == null && r.fd.type == BaseType.VOID){
-					// no return
-					yield BaseType.NONE;
+				if(r.expr == null){
+					if(r.fd.type == BaseType.VOID){
+						yield BaseType.NONE;
+					}// no return
 				}else{
 					if(CompareType(visit(r.expr),r.fd.type)){
 						yield r.fd.type;
 					}
 				}
-				error("Return type of " + r.fd.name.toString() + "does not match function decl");
+				error("Return type of " + r.fd.name.toString() + " does not match function decl");
 
 				yield BaseType.UNKNOWN;
 

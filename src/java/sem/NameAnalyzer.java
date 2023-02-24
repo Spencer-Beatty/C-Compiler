@@ -33,6 +33,7 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 				switch (sym){
 					// null is good
 					case null -> {
+						visit(fd.type);
 						FunSymbol fun = new FunSymbol(fd);
 						current.put(fun);
 						current.function = fun;
@@ -159,18 +160,14 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 
 					}
 					case default -> {
-						error("struct " + std.name + " already defined within scope");
+						error("struct " + std.structType.name + " already defined within scope");
 					}
 				}
 
 			}
 
 
-			case (Type t) -> {
-				// deal with struct expression linking to struct;
-				// check for struct type? think more about this
 
-			}
 
 			case (FunCallExpr fc) -> {
 				Symbol sym = current.lookup(fc.name);
@@ -261,7 +258,31 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 				// must happen in type analysis
 
 			}
+			case StructType st ->{
+				Symbol sym = current.lookup(st.name);
+				switch (sym){
+					case null -> {error("Structtype not declared");}
+					case VarSymbol vs -> {
+						switch (vs.vd.type) {
+							case null -> { error("imporoper variable symbol declaration");}
+							case StructType std -> {
+								st.fields = std.fields;
+							}
+							default -> error("Structtype not declared");
+						}
 
+					}
+					default -> error("Structtype not declared");
+
+				}
+
+
+			}
+			case (Type t) -> {
+				// deal with struct expression linking to struct;
+				// check for struct type? think more about this
+
+			}
 			case default -> {}
 
 

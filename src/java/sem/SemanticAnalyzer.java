@@ -10,10 +10,21 @@ public class SemanticAnalyzer {
 		na.visit(prog);
 		errors += na.getErrorCount();
 
+		ReturnCheckAnalyzer rc = new ReturnCheckAnalyzer();
+		rc.visit(prog);
+		errors += rc.getErrorCount();
+
 		TypeAnalyzer tc = new TypeAnalyzer();
 		tc.visit(prog);
 		errors += tc.getErrorCount();
 
+		LeftValueAnalyzer lc = new LeftValueAnalyzer();
+		lc.visit(prog);
+		errors += lc.getErrorCount();
+
+		UniqueStructAnalyzer uc = new UniqueStructAnalyzer();
+		uc.visit(prog);
+		errors += uc.getErrorCount();
 		// To complete
 
 		// Return the number of errors.
