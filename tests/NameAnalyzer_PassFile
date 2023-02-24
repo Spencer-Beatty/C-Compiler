@@ -1,0 +1,11 @@
+int i;
+
+struct decl {
+    int a;
+    int b;
+    char c;
+};
+
+void main(int i){
+    int j;
+}

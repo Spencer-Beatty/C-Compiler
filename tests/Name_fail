@@ -1,0 +1,20 @@
+/*int i;
+int i;
+
+struct a {
+    int b;
+    int b;
+};
+
+void main(int i){
+    int i;
+    int j;
+    {
+        int j;
+    }
+}
+*/
+void main2(int j, int j){
+    char a;
+    void b;
+}
