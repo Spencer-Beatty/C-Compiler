@@ -92,9 +92,15 @@ public class ExprCodeGen extends CodeGen {
 
                     }
 
-                    case DIV -> {}
-                    case MOD -> {}
-                    case MUL -> {}
+                    case DIV -> {
+                        text.emit(OpCode.DIV, lhs, rhs);
+                        text.emit(OpCode.MFLO, res);
+                    }
+                    case MOD -> {
+                        text.emit(OpCode.DIV, lhs, rhs);
+                        text.emit(OpCode.MFHI, res);
+                    }
+                    case MUL -> {text.emit(OpCode.MUL, res, lhs, rhs);}
                 }
                 return res;
 
