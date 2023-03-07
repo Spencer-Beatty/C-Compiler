@@ -1,12 +1,9 @@
 import ast.ASTPrinter;
 import ast.Program;
-import gen.CodeGenerator;
 import lexer.Scanner;
 import lexer.Token;
 import lexer.Tokeniser;
 import parser.Parser;
-import gen.asm.AssemblyPass;
-import regalloc.NaiveRegAlloc;
 import sem.SemanticAnalyzer;
 
 import java.io.File;
@@ -15,9 +12,12 @@ import java.io.PrintWriter;
 
 
 /**
- * This is the entry point to the compiler. This files should not be modified.
+ * The Main file implies an interface for the subsequent components, e.g.
+ *   * The Tokeniser must have a constructor which accepts a Scanner,
+ *     moreover the Tokeniser must provide a public method getErrorCount
+ *     which returns the total number of lexing errors.
  */
-public class Main {
+public class MainPart2 {
     private static final int FILE_NOT_FOUND = 2;
     private static final int MODE_FAIL      = 254;
     private static final int LEXER_FAIL     = 250;
@@ -26,68 +26,43 @@ public class Main {
     private static final int PASS           = 0;
     
     private enum Mode {
-        LEXER, PARSER, AST, SEMANTICANALYSIS, GEN
-    }
-
-    private enum RegAllocMode {
-        NONE, NAIVE
+        LEXER, PARSER, AST, SEMANTICANALYSIS
     }
 
     private static void usage() {
         System.out.println("Usage: java "+ Main.class.getSimpleName()+" pass inputfile [outputfile]");
-        System.out.println("where pass is either: -lexer, -parser, -ast, -sem, -gen [naive]");
-        System.out.println("if -ast is chosen, the output file must be specified");
+        System.out.println("where pass is either: -lexer, -parser, -ast, -sem");
+        System.out.println("if -ast is chosen, the output fill must be specified");
         System.exit(-1);
-    }
-
-    private static void ensureArgExists(String[] args, int num) {
-        if (num >= args.length)
-            usage();
     }
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        ensureArgExists(args, 0);
+        if (args.length < 2)
+            usage();
 
         Mode mode = null;
-        RegAllocMode regAllocMode = RegAllocMode.NONE;
-        int curArgCnt = 0;
-        switch (args[curArgCnt]) {
+        switch (args[0]) {
             case "-lexer":
                 mode = Mode.LEXER;
-                curArgCnt++;
                 break;
             case "-parser":
                 mode = Mode.PARSER;
-                curArgCnt++;
                 break;
             case "-ast":
                 if (args.length < 3)
                     usage();
                 mode = Mode.AST;
-                curArgCnt++;
                 break;
             case "-sem":
                 mode = Mode.SEMANTICANALYSIS;
-                curArgCnt++;
-                break;
-            case "-gen":
-                mode = Mode.GEN;
-                curArgCnt++;
-                ensureArgExists(args, curArgCnt);
-                if (args[curArgCnt].equals("naive")) {
-                    regAllocMode = RegAllocMode.NAIVE;
-                    curArgCnt++;
-                }
                 break;
             default:
                 usage();
                 break;
         }
 
-        ensureArgExists(args, curArgCnt);
-        File inputFile = new File(args[curArgCnt]);
-        curArgCnt++;
+        File inputFile = new File(args[1]);
 
         Scanner scanner;
         try {
@@ -120,13 +95,10 @@ public class Main {
         }
 
         else if (mode == Mode.AST) {
-            ensureArgExists(args, curArgCnt);
-            File outputFile = new File(args[curArgCnt]);
-            curArgCnt++;
-
             Parser parser = new Parser(tokeniser);
             Program programAst = parser.parse();
             if (parser.getErrorCount() == 0) {
+                File outputFile = new File(args[2]);
                 PrintWriter writer = new PrintWriter(outputFile);
                 new ASTPrinter(writer).visit(programAst);
                 writer.close();
@@ -148,38 +120,6 @@ public class Main {
                 System.exit(errors == 0 ? PASS : SEM_FAIL);
             } else
                 System.exit(PARSER_FAIL);
-        }
-
-        else if (mode == Mode.GEN) {
-            ensureArgExists(args, curArgCnt);
-            File outputFile = new File(args[curArgCnt]);
-            curArgCnt++;
-
-            Parser parser = new Parser(tokeniser);
-            Program programAst = parser.parse();
-            if (parser.getErrorCount() > 0)
-                System.exit(PARSER_FAIL);
-            SemanticAnalyzer sem = new SemanticAnalyzer();
-            int errors = sem.analyze(programAst);
-            if (errors > 0)
-                System.exit(SEM_FAIL);
-
-            AssemblyPass regAlloc = AssemblyPass.NOP;
-            switch(regAllocMode) {
-                case NONE:
-                    regAlloc = AssemblyPass.NOP;
-                    break;
-                case NAIVE:
-                    regAlloc = NaiveRegAlloc.INSTANCE;
-                    break;
-            }
-            CodeGenerator codegen = new CodeGenerator(regAlloc);
-            try {
-                codegen.emitProgram(programAst, outputFile);
-            } catch (FileNotFoundException e) {
-                System.out.println("File "+outputFile.toString()+" does not exist.");
-                System.exit(FILE_NOT_FOUND);
-            }
         }
 
         else {

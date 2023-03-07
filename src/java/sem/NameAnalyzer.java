@@ -217,7 +217,11 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 			case If anIf -> {
 				visit(anIf.expr);
 				visit(anIf.stmt1);
-				visit(anIf.stmt2);
+				// need to check if else exists
+				if(anIf.stmt2 != null){
+					visit(anIf.stmt2);
+				}
+
 			}
 			case TypecastExpr typecastExpr -> {
 				visit(typecastExpr.expr);
