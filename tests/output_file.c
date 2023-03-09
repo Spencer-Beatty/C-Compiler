@@ -1,4 +1,11 @@
-Program(VarDecl(ArrayType(ArrayType(INT,1),2),a),FunDecl(VOID,main,
-	Block(ExprStmt(Assign(ArrayAccessExpr(ArrayAccessExpr(VarExpr(a),IntLiteral(1)),BinOp(IntLiteral(2),ADD,IntLiteral(2))),IntLiteral(1))),
-		ExprStmt(ArrayAccessExpr(ArrayAccessExpr(ArrayAccessExpr(VarExpr(a),IntLiteral(100)),Assign(VarExpr(a),VarExpr(b))),VarExpr(c)))
-	)))
+Program(FunDecl(INT,main,
+	Block(If(IntLiteral(1),
+			Block(If(IntLiteral(2),
+					Block(Return(IntLiteral(1))
+					),
+						Block(Return(IntLiteral(2))
+						)),
+				Return(IntLiteral(2))
+					)),
+		Return()
+				)))
