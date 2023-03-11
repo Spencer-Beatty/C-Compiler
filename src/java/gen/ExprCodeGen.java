@@ -3,6 +3,9 @@ package gen;
 import ast.*;
 import gen.asm.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Generates code to evaluate an expression and return the result in a register.
@@ -114,13 +117,27 @@ public class ExprCodeGen extends CodeGen {
 
             }
             case Assign assign -> {
-                // come back to later to deal with store words
-                Register lhs = visit(assign.expr1);
-                Register rhs = visit(assign.expr2);
-                text.emit(OpCode.ADD, lhs, Register.Arch.zero, rhs);
-                return lhs;
+                // expr1 is lhs, expr2 is rhs
+                Register addrReg = (new AddrCodeGen(asmProg)).visit(assign.expr1);
+                Register valReg = visit(assign.expr2);
+                text.emit(OpCode.SW, valReg, addrReg, 0);
+                return valReg;
             }
             case VarExpr varExpr -> {
+                // check whether statically defined or if on the stack
+                Register v1 = Register.Virtual.create();
+                if(varExpr.vd.isStaticAllocated()){
+                    // get label and sw
+                    text.emit("Loading address " + varExpr.vd.label.toString() + " into register");
+                    text.emit(OpCode.LA, v1, varExpr.vd.label);
+                }else{
+                    // deal with stack
+                    text.emit("Loading word from the stack");
+                    text.emit(OpCode.LW,v1,Register.Arch.fp,varExpr.vd.fpOffset);
+
+                }
+                return v1;
+
             }
             case SizeOfExpr sizeOfExpr -> {
             }
@@ -132,11 +149,14 @@ public class ExprCodeGen extends CodeGen {
 
             }
             case TypecastExpr typecastExpr -> {
+                return visit(typecastExpr.expr);
             }
             case ArrayAccessExpr arrayAccessExpr -> {
             }
             case FunCallExpr funCallExpr -> {
                 // check if funCall is predefined ( print_i )
+                // otherwise should jump to function call with link
+                // pushing parameters to the stack
                 switch(funCallExpr.name){
                     case "print_i" -> {
                         // first argument contains integer expression argument
@@ -145,6 +165,15 @@ public class ExprCodeGen extends CodeGen {
                         text.emit("Loading result into a0 and printing");
                         text.emit(OpCode.ADD, Register.Arch.a0, Register.Arch.zero , res);
                         text.emit(OpCode.LI, Register.Arch.v0, 1);
+                        text.emit(OpCode.SYSCALL);
+                    }
+                    case "print_s" -> {
+                        // first argument char *
+                        text.emit("Function call print_s");
+                        // res should be address of label pointing to string or char[]
+                        Register res = visit(funCallExpr.exprs.get(0));
+                        text.emit(OpCode.ADD, Register.Arch.a0, Register.Arch.zero, res);
+                        text.emit(OpCode.LI, Register.Arch.v0, 4);
                         text.emit(OpCode.SYSCALL);
                     }
                 }
@@ -156,10 +185,47 @@ public class ExprCodeGen extends CodeGen {
             case ChrLiteral chrLiteral -> {
             }
             case StrLiteral strLiteral -> {
+                // should create a label here
+
+                Register res = Register.Virtual.create();
+                Label label = Label.create("string");
+                asmProg.sections.get(0).emit(label);
+                asmProg.sections.get(0).emit(new Directive("asciiz " +"\""+ReplaceEscape(strLiteral.strLiteral)+"\""));
+                // pad the space
+                System.out.println("Hello World".length());
+                System.out.println("Hello World\n".length());
+                if(((strLiteral.strLiteral.length()+1) % 4)!= 0) {
+                    asmProg.sections.get(0).emit(new Directive("space " + (4-((strLiteral.strLiteral.length()+1) % 4))));
+                }
+
+
+
+
+                text.emit(OpCode.LA,res, label);
+                return res;
             }
             case ValueAtExpr valueAtExpr -> {
             }
         }
         return null;
     }
+
+    private String ReplaceEscape(String string){
+        // function is not very efficient, look into regular expression potentially
+        string = string.replace("\n", "\\n");
+
+        string  = string.replace("\t", "\\t");
+        string = string.replace("\b", "\\b");
+
+        string = string.replace("\r", "\\r");
+        string = string.replace("\f", "\\f");
+        string = string.replace("\f", "\\f");
+        string = string.replace("\'", "\\'");
+        string = string.replace("\"", "\\\"");
+        string = string.replace("\0", "\\0");
+
+        return string;
+
+    }
+
 }

@@ -21,6 +21,9 @@ public class ProgramCodeGen extends CodeGen {
         MemAllocCodeGen allocator = new MemAllocCodeGen(asmProg);
         allocator.visit(p);
 
+
+        // idea: make text section here, each function named after themselves
+        asmProg.newSection(AssemblyProgram.Section.Type.TEXT);
         // generate the code for each function
         p.decls.forEach((d) -> {
             switch(d) {
