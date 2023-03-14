@@ -117,6 +117,8 @@ public class ExprCodeGen extends CodeGen {
 
             }
             case Assign assign -> {
+                // special case for struct;
+                text.emit("Assign expression");
                 // expr1 is lhs, expr2 is rhs
                 Register addrReg = (new AddrCodeGen(asmProg)).visit(assign.expr1);
                 Register valReg = visit(assign.expr2);
@@ -155,6 +157,10 @@ public class ExprCodeGen extends CodeGen {
                 return visit(typecastExpr.expr);
             }
             case ArrayAccessExpr arrayAccessExpr -> {
+                // resReg is the address of the index we want to get
+                Register resReg = (new AddrCodeGen(asmProg)).visit(arrayAccessExpr);
+                text.emit(OpCode.LW, resReg, resReg, 0);
+                return resReg;
             }
             case FunCallExpr funCallExpr -> {
                 // check if funCall is predefined ( print_i )
@@ -182,6 +188,11 @@ public class ExprCodeGen extends CodeGen {
                 }
             }
             case FieldAccessExpr fieldAccessExpr -> {
+                text.emit("FieldAccess Expression");
+                Register v1 = Register.Virtual.create();
+                Register addrReg = (new AddrCodeGen(asmProg)).visit(fieldAccessExpr);
+                text.emit(OpCode.LW, v1, addrReg, 0);
+                return v1;
             }
             case AddressOfExpr addressOfExpr -> {
             }

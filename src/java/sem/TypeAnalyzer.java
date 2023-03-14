@@ -241,6 +241,7 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						}
 						if (exists) {
 							// indicates vd was also initialized
+							f.structType = st;
 							f.type = vd.type;
 							yield vd.type;
 						} else {
@@ -325,16 +326,16 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				Type t1 = visit(a.expr1);
 				Type t2 = visit(a.expr2);
 				if(t1 == BaseType.VOID || t2 == BaseType.VOID){
-					error("unknwon");
+					error("unknown");
 					yield BaseType.UNKNOWN;
 				}
 				switch (t1) {
 					case null -> {
-						error("unknwon");
+						error("unknown");
 						yield BaseType.UNKNOWN;
 					}
 					case ArrayType at ->{
-						error("unknwon");
+						error("unknown");
 						yield BaseType.UNKNOWN;
 					}
 					default -> {
@@ -344,11 +345,11 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 								yield BaseType.UNKNOWN;
 							}
 							case ArrayType at ->{
-								error("unknwon");
+								error("unknown");
 								yield BaseType.UNKNOWN;
 							}
 							default -> {
-								if(t1 == t2 ){
+								if(CompareType(t1,t2) ){
 									a.type = t1;
 									yield t1;
 								}else{

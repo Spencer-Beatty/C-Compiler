@@ -2,9 +2,11 @@ package gen;
 
 import ast.*;
 import gen.asm.AssemblyProgram;
+import gen.asm.Directive;
 import gen.asm.Label;
 
 
+import javax.lang.model.element.ModuleElement;
 import java.util.ArrayList;
 
 import java.util.Collections;
@@ -29,36 +31,7 @@ public class MemAllocCodeGen extends CodeGen {
         }
     }
 
-    private int getSize(Type type){
-        int size = 0;
-        switch (type){
-            case null -> throw new IllegalArgumentException("getSize type is of null argument");
 
-            case BaseType baseType -> {
-                if(baseType == BaseType.INT){
-                    size = 4;
-                }else if(baseType == BaseType.CHAR){
-
-                }else if(baseType == BaseType.VOID){
-                    size = 0;
-                }else{
-                    throw new IllegalArgumentException("type: " + baseType + " ,does not have size");
-                }
-            }
-            case ArrayType arrayType -> {
-
-            }
-            case StructType structType -> {
-
-            }
-            case PointerType pointerType -> {
-
-            }
-        }
-        return size;
-
-
-    }
 
     void visit(ASTNode n) {
         switch(n) {
@@ -129,6 +102,19 @@ public class MemAllocCodeGen extends CodeGen {
             }
             case StructTypeDecl sd -> {
                 // todo
+                // make unique label with structure name;
+                Label structName = Label.get(sd.structType.name);
+                sd.label = structName;
+                // put label in data section
+                AssemblyProgram.Section dataSection = asmProg.sections.get(0);
+                dataSection.emit(structName);
+                // for each field create a directive of space 4 with size of field
+                // then for looking up just go to struct label and increment -4 * field number to get size
+                for(VarDecl vd : sd.fields){
+                    int size = getSize(vd.type);
+                    dataSection.emit("Field: " + vd.name);
+                    dataSection.emit(new Directive("word " + size));
+                }
             }
             case ASTNode astNode ->{
                 astNode.children().forEach((child)->{

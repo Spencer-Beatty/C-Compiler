@@ -2,6 +2,7 @@ package gen;
 
 import ast.*;
 import gen.asm.AssemblyProgram;
+import gen.asm.Label;
 import gen.asm.OpCode;
 import gen.asm.Register;
 
@@ -37,18 +38,63 @@ public class AddrCodeGen extends CodeGen {
             }
             case ChrLiteral chrLiteral -> null;
             case Assign assign -> null;
-            case FieldAccessExpr fieldAccessExpr -> null;
+            case FieldAccessExpr fieldAccessExpr -> {
+                text.emit("Get address of struct variable");
+                // this will get the variable declaration within local scope or global
+                // structVar is an address
+                Register structVarAddress = visit(fieldAccessExpr.expr);
+                text.emit("Get address of Original Struct Declaration");
+                Register v1 = Register.Virtual.create();
+                text.emit(OpCode.LA, v1, Label.get(fieldAccessExpr.structType.name));
+                text.emit("Get offset of struct field");
+                text.emit(OpCode.LW, v1, v1, GetFieldNumber(fieldAccessExpr.structType,fieldAccessExpr.field)*-4);
+                // offset of struct field now stored withing v1
+                // v1 should be a negative number
+                text.emit("Access offset from struct address");
+                // add offset to address of struct var
+                text.emit(OpCode.ADD, v1, structVarAddress, v1);
+                //return address
+
+                yield v1;
+
+            }
             case StrLiteral strLiteral -> null;
             case FunCallExpr funCallExpr -> null;
             case SizeOfExpr sizeOfExpr -> null;
             case AddressOfExpr addressOfExpr -> null;
             case ValueAtExpr valueAtExpr -> null;
-            case ArrayAccessExpr arrayAccessExpr -> null;
+            case ArrayAccessExpr arrayAccessExpr -> {
+                Register resReg = Register.Virtual.create();
+                Register accessReg = visit(arrayAccessExpr.name);
+                text.emit("ArrayAccessExpr address generation");
+                Register index = (new ExprCodeGen(asmProg)).visit(arrayAccessExpr.index);
+                text.emit("Load negative size, to multiply by index number to find start point result");
+                text.emit(OpCode.LI, resReg, -getSize(arrayAccessExpr.type));
+                text.emit(OpCode.MUL,resReg,resReg, index);
+                // subbing from access reg to move to the correct index
+                text.emit(OpCode.SUB, accessReg, accessReg, resReg);
+                // at this point index will look something like -8 if storing ints and index was 2
+                text.emit("Load address of array at index into result register");
+                text.emit(OpCode.ADD, resReg,Register.Arch.zero, accessReg);
+                yield resReg;
+            }
             case TypecastExpr typecastExpr -> null;
 
         };
 
 
+    }
+
+    private int GetFieldNumber(StructType st, String name){
+        int counter = 0;
+        // names are guarenteed by name analyzer to be unique
+        for(VarDecl vd : st.fields){
+            if(vd.name.equals(name)){
+                return counter;
+            }
+            counter++;
+        }
+        throw new RuntimeException("Field " + name + " is not found within struct st");
     }
 
 }

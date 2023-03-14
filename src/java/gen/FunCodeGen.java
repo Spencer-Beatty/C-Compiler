@@ -24,7 +24,7 @@ public class FunCodeGen extends CodeGen {
 
         // TODO: to complete
         // 1) emit the prolog
-        Label label = Label.create(fd.name);
+        Label label = Label.get(fd.name);
         fd.label = label;
         text.emit(label);
         // stack pointer will be pushed down for params by callee
