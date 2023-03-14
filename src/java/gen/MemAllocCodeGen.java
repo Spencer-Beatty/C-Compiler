@@ -3,11 +3,10 @@ package gen;
 import ast.*;
 import gen.asm.AssemblyProgram;
 import gen.asm.Label;
-import gen.asm.OpCode;
-import gen.asm.Register;
+
 
 import java.util.ArrayList;
-import java.util.Collection;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -106,29 +105,31 @@ public class MemAllocCodeGen extends CodeGen {
                     vd.fpOffset = offset +  vd.size;
                     offset += vd.size;
                 }
-
+                // callSize will be the amount to move the stack pointer down before calling the function;
+                //
+                fd.callSize = offset + 4;
                 this.global = false;
-                this.fpOffset = 4; // skips the frame pointer
+                this.fpOffset = -4; // skips the frame pointer
                 // should this be 4 or -4 ?
                 // maybe 4 because stores frame pointer at the start?
                 System.out.println("fpOffset before entering function: " + fpOffset);
                 visit(fd.block);
                 this.global = true;
+                //frame pointer should be set back to what it was
                 System.out.println("fpOffset after leaving function: " + fpOffset);
                 // reset frame pointer after function
             }
             case Block bd ->{
-                boolean scope = global;
-                global = false;
                 bd.vds.forEach((innerVarDecl) -> {
                     visit(innerVarDecl);
                 });
                 bd.stmts.forEach((innerStmt) -> {
                     visit(innerStmt);
                 });
-                global = scope;
             }
-
+            case StructTypeDecl sd -> {
+                // todo
+            }
             case ASTNode astNode ->{
                 astNode.children().forEach((child)->{
                     visit(child);

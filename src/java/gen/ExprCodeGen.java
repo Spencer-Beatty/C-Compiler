@@ -130,6 +130,8 @@ public class ExprCodeGen extends CodeGen {
                     // get label and sw
                     text.emit("Loading address " + varExpr.vd.label.toString() + " into register");
                     text.emit(OpCode.LA, v1, varExpr.vd.label);
+                    text.emit("Loading word from address into register");
+                    text.emit(OpCode.LW, v1, v1, 0);
                 }else{
                     // deal with stack
                     text.emit("Loading word from the stack");
@@ -149,6 +151,7 @@ public class ExprCodeGen extends CodeGen {
 
             }
             case TypecastExpr typecastExpr -> {
+
                 return visit(typecastExpr.expr);
             }
             case ArrayAccessExpr arrayAccessExpr -> {

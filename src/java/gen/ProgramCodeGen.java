@@ -24,6 +24,7 @@ public class ProgramCodeGen extends CodeGen {
 
         // idea: make text section here, each function named after themselves
         asmProg.newSection(AssemblyProgram.Section.Type.TEXT);
+        // no need to visit other things because memalloc deals with them.
         // generate the code for each function
         p.decls.forEach((d) -> {
             switch(d) {
