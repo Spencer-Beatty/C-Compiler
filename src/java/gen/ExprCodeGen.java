@@ -248,6 +248,7 @@ public class ExprCodeGen extends CodeGen {
         int valSign = IsLocal(assign.expr2);
         int addrSign = IsLocal(assign.expr1);
         int offset = 0;
+        int counter = 1;
         Register v1 = Register.Virtual.create();
         for(VarDecl vd : structType.fields){
             text.emit("Load field from value vd into next field of address");
@@ -257,7 +258,9 @@ public class ExprCodeGen extends CodeGen {
             text.emit(OpCode.SW, v1, addrReg , addrSign * offset);
 
             IsLocal(assign.expr1);
-            offset += getSize(vd.type);
+            // should not be get size but instead load value from declaration
+            offset += getSize(vd.type) + (getSize(vd.type) % 4);
+            counter++;
         }
         return valReg;
     }
