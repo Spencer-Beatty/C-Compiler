@@ -19,17 +19,6 @@ public class UniqueStructAnalyzer extends BaseSemanticAnalyzer{
                     global.put(new VarSymbol(new VarDecl(std.structType,std.structType.name)));
                 }
             }
-            case VarExpr ve ->{
-                switch (ve.type) {
-                    case null -> {}
-                    case StructType st->{
-                        if(ve.name.equals(st.name)){
-                            error("Struct type name used as variable");
-                        }
-                    }
-                    default -> {}
-                }
-            }
             case Program p ->{
                 global = new Scope();
                 for(ASTNode b : p.children()){

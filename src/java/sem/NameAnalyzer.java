@@ -72,6 +72,7 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 				// Just lookup within current, because variable can be shadowed if current == null
 				Symbol sym = current.lookupCurrent(vd.name);
 				if( sym != null){
+					// is ok if struct
 					error("Variable already declared within scope");
 				}else{
 					current.put(new VarSymbol(vd));
@@ -141,6 +142,7 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 						// create new scope
 						// need to add name to the scope
 						std.structType.fields = std.fields;
+						// put struct symbol?
 						current.put(new VarSymbol(new VarDecl(std.structType, std.structType.name)));
 						Scope scope = new Scope(current);
 
