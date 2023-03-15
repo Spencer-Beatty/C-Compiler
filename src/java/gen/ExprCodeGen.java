@@ -3,6 +3,7 @@ package gen;
 import ast.*;
 import gen.asm.*;
 
+import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,11 +119,26 @@ public class ExprCodeGen extends CodeGen {
             }
             case Assign assign -> {
                 // special case for struct;
+                boolean structSwitch = false;
+                StructType structType = null;
+                switch (assign.type){
+                    case null -> {}
+                    case StructType st -> {
+                        structSwitch = true;
+                        structType = st;
+                    }
+                    default -> {}
+                }
                 text.emit("Assign expression");
                 // expr1 is lhs, expr2 is rhs
                 Register addrReg = (new AddrCodeGen(asmProg)).visit(assign.expr1);
                 Register valReg = visit(assign.expr2);
-                text.emit(OpCode.SW, valReg, addrReg, 0);
+                if(structSwitch){
+                    return(StructAssign2(text,assign,structType));
+                }else{
+                    text.emit(OpCode.SW, valReg, addrReg, 0);
+                }
+
                 return valReg;
             }
             case VarExpr varExpr -> {
@@ -222,6 +238,44 @@ public class ExprCodeGen extends CodeGen {
             }
         }
         return null;
+    }
+    private Register StructAssign2(AssemblyProgram.Section text, Assign assign, StructType structType){
+        text.emit("Get Addresses of Struct Variables");
+        Register addrReg = (new AddrCodeGen(asmProg)).visit(assign.expr1);
+        Register valReg = (new AddrCodeGen(asmProg)).visit(assign.expr2);
+        // if isLocal(e) then offset from address is negative, else offset is positive
+        text.emit("Starting Struct Assign between");
+        int valSign = IsLocal(assign.expr2);
+        int addrSign = IsLocal(assign.expr1);
+        int offset = 0;
+        for(VarDecl vd : structType.fields){
+            text.emit("Load field from value vd into next field of address");
+            Register v1 = Register.Virtual.create();
+            text.emit("loading value from valreg into register");
+            text.emit(OpCode.LW, v1, valReg,  valSign * offset);
+            text.emit("loading value into register of addreg");
+            text.emit(OpCode.SW, v1, addrReg , addrSign * offset);
+
+            IsLocal(assign.expr1);
+            offset += getSize(vd.type);
+        }
+        return valReg;
+    }
+    private int IsLocal(Expr e){
+        switch (e){
+            case VarExpr ve -> {
+                if(ve.vd.isStaticAllocated()){
+                    return 1;
+                }else{
+                    return -1;
+                }
+            }
+            case ArrayAccessExpr ae ->{
+                IsLocal(ae);
+            }
+            case default ->{}
+        }
+        throw new IllegalArgumentException("bad argument expression not of correct type");
     }
 
     private String ReplaceEscape(String string){

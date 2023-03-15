@@ -39,6 +39,8 @@ public class AddrCodeGen extends CodeGen {
             case ChrLiteral chrLiteral -> null;
             case Assign assign -> null;
             case FieldAccessExpr fieldAccessExpr -> {
+                text.emit("Start of Field Access Expr in Addr Code Gen");
+                // now we need to find out if structs are locally or globally declared
                 text.emit("Get address of struct variable");
                 // this will get the variable declaration within local scope or global
                 // structVar is an address
@@ -47,15 +49,17 @@ public class AddrCodeGen extends CodeGen {
                 Register v1 = Register.Virtual.create();
                 text.emit(OpCode.LA, v1, Label.get(fieldAccessExpr.structType.name));
                 text.emit("Get offset of struct field");
-                text.emit(OpCode.LW, v1, v1, GetFieldNumber(fieldAccessExpr.structType,fieldAccessExpr.field)*-4);
+                Register v2 = Register.Virtual.create();
+                Register v3 = Register.Virtual.create();
+                text.emit(OpCode.LW, v2, v1, GetFieldNumber(fieldAccessExpr.structType,fieldAccessExpr.field)*4);
                 // offset of struct field now stored withing v1
                 // v1 should be a negative number
                 text.emit("Access offset from struct address");
                 // add offset to address of struct var
-                text.emit(OpCode.ADD, v1, structVarAddress, v1);
+                text.emit(OpCode.ADD, v3, structVarAddress, v2);
                 //return address
 
-                yield v1;
+                yield v3;
 
             }
             case StrLiteral strLiteral -> null;

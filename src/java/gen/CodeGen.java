@@ -31,10 +31,12 @@ public abstract class CodeGen {
                 size = size + (size % 4);
             }
             case StructType structType -> {
-
+                for(VarDecl field : structType.fields){
+                    size += getSize(field.type);
+                }
             }
             case PointerType pointerType -> {
-
+                size = 4;
             }
         }
         return size;
