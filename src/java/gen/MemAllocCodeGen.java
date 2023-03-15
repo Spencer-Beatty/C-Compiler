@@ -43,6 +43,25 @@ public class MemAllocCodeGen extends CodeGen {
                     dataSection().emit(label);
                     vd.label = label;
                     vd.size = getSize(vd.type);
+                    //create size
+                    switch(vd.type){
+                        case StructType st ->{
+                            for(VarDecl var : st.fields){
+                                int size = getSize(var.type);
+                                dataSection().emit("Field: " + var.name);
+                                dataSection().emit(new Directive("space " + size));
+                            }
+
+                        }
+                        case ArrayType at -> {
+                            int size = getSize(at.type);
+                            dataSection().emit(new Directive("space " + size));
+                        }
+                        default -> {
+                            int size = getSize(vd.type);
+                            dataSection().emit(new Directive("space " + size));
+                        }
+                    }
                     vd.staticAllocated = true;
                     System.out.println("global");
                 }else{
@@ -110,10 +129,12 @@ public class MemAllocCodeGen extends CodeGen {
                 dataSection.emit(structName);
                 // for each field create a directive of space 4 with size of field
                 // then for looking up just go to struct label and increment -4 * field number to get size
+                int offset = 0;
                 for(VarDecl vd : sd.fields){
                     int size = getSize(vd.type);
                     dataSection.emit("Field: " + vd.name);
-                    dataSection.emit(new Directive("word " + size));
+                    dataSection.emit(new Directive("word " + offset));
+                    offset += size;
                 }
             }
             case ASTNode astNode ->{
