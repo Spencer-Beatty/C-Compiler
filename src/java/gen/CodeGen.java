@@ -43,4 +43,22 @@ public abstract class CodeGen {
 
 
     }
+    public int IsLocal(Expr e){
+        // Outputs 1 if declared in the data section
+        // Outputs -1 if declared on the stack
+        switch (e){
+            case VarExpr ve -> {
+                if(ve.vd.isStaticAllocated()){
+                    return 1;
+                }else{
+                    return -1;
+                }
+            }
+            case ArrayAccessExpr ae ->{
+                IsLocal(ae);
+            }
+            case default ->{}
+        }
+        throw new IllegalArgumentException("bad argument expression not of correct type");
+    }
 }

@@ -51,14 +51,18 @@ public class AddrCodeGen extends CodeGen {
                 text.emit("Get offset of struct field");
                 Register v2 = Register.Virtual.create();
                 Register v3 = Register.Virtual.create();
+                // this should always be positive, h
                 text.emit(OpCode.LW, v2, v1, GetFieldNumber(fieldAccessExpr.structType,fieldAccessExpr.field)*4);
                 // offset of struct field now stored withing v1
                 // v1 should be a negative number
                 text.emit("Access offset from struct address");
                 // add offset to address of struct var
-                text.emit(OpCode.ADD, v3, structVarAddress, v2);
+                if(IsLocal(fieldAccessExpr.expr) == 1){
+                    text.emit(OpCode.ADD, v3, structVarAddress, v2);
+                }else{
+                    text.emit(OpCode.SUB, v3, structVarAddress, v2);
+                }
                 //return address
-
                 yield v3;
 
             }

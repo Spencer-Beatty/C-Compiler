@@ -248,9 +248,9 @@ public class ExprCodeGen extends CodeGen {
         int valSign = IsLocal(assign.expr2);
         int addrSign = IsLocal(assign.expr1);
         int offset = 0;
+        Register v1 = Register.Virtual.create();
         for(VarDecl vd : structType.fields){
             text.emit("Load field from value vd into next field of address");
-            Register v1 = Register.Virtual.create();
             text.emit("loading value from valreg into register");
             text.emit(OpCode.LW, v1, valReg,  valSign * offset);
             text.emit("loading value into register of addreg");
@@ -261,22 +261,7 @@ public class ExprCodeGen extends CodeGen {
         }
         return valReg;
     }
-    private int IsLocal(Expr e){
-        switch (e){
-            case VarExpr ve -> {
-                if(ve.vd.isStaticAllocated()){
-                    return 1;
-                }else{
-                    return -1;
-                }
-            }
-            case ArrayAccessExpr ae ->{
-                IsLocal(ae);
-            }
-            case default ->{}
-        }
-        throw new IllegalArgumentException("bad argument expression not of correct type");
-    }
+
 
     private String ReplaceEscape(String string){
         // function is not very efficient, look into regular expression potentially
