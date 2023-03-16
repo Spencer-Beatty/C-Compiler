@@ -160,6 +160,11 @@ public class ExprCodeGen extends CodeGen {
 
             }
             case SizeOfExpr sizeOfExpr -> {
+                Register v1 = Register.Virtual.create();
+                int size = getSize(sizeOfExpr.type);
+                text.emit("size of expression");
+                text.emit(OpCode.LI, v1, size);
+                return v1;
             }
             case IntLiteral intLiteral -> {
                 Register v1 = Register.Virtual.create();
@@ -182,6 +187,7 @@ public class ExprCodeGen extends CodeGen {
                 // check if funCall is predefined ( print_i )
                 // otherwise should jump to function call with link
                 // pushing parameters to the stack
+                Register returnReg = Register.Virtual.create();
                 switch(funCallExpr.name){
                     case "print_i" -> {
                         // first argument contains integer expression argument
@@ -191,6 +197,7 @@ public class ExprCodeGen extends CodeGen {
                         text.emit(OpCode.ADD, Register.Arch.a0, Register.Arch.zero , res);
                         text.emit(OpCode.LI, Register.Arch.v0, 1);
                         text.emit(OpCode.SYSCALL);
+                        return null;
                     }
                     case "print_s" -> {
                         // first argument char *
@@ -200,8 +207,55 @@ public class ExprCodeGen extends CodeGen {
                         text.emit(OpCode.ADD, Register.Arch.a0, Register.Arch.zero, res);
                         text.emit(OpCode.LI, Register.Arch.v0, 4);
                         text.emit(OpCode.SYSCALL);
+                        return null;
                     }
+                    case "print_c" ->{ return null;}
+                    case "read_c" ->{ return null;}
+                    case "read_i" ->{return null;}
+                    case "mcmalloc" ->{return null;}
                 }
+                // case where not predefined
+                //funCallExpr.fd.
+                /*
+                precall:
+                    • pass the arguments via push on the stack
+                    • reserve space on stack for return value
+                     (if needed) by pushing the stack down
+                    • push return address on the stack
+                 */
+                // start by pushing stack down
+                // call size is equal to all params, return size and return address space
+                text.emit("Start of function call");
+                text.emit(OpCode.ADDI, Register.Arch.sp, Register.Arch.sp, -funCallExpr.fd.callSize);
+                // put params on the stack starting at the top
+                int startOfReturnValue = PushParams(text, funCallExpr, funCallExpr.fd.callSize);
+                // return address
+                PushReturnValue(text);
+
+                //text.emit(OpCode.ADDI, returnReg, Register.Arch.sp, funCallExpr.fd.returnValFpOffset);
+                // make the function call
+                text.emit("Calling function " + funCallExpr.fd.name);
+                text.emit(OpCode.JAL, funCallExpr.fd.label);
+                text.emit("Function Call ended ");
+                /*
+                postreturn:
+                    • restore return address from the stack
+                    • read the return value from dedicated
+                      register or stack
+                    • reset stack pointer
+                */
+                text.emit("Restoring ra");
+                // restore return address from the stack
+                text.emit(OpCode.LW, Register.Arch.ra, Register.Arch.sp, 4);
+                // load value into register // won't work for struct
+                text.emit(OpCode.LW, returnReg, Register.Arch.sp , startOfReturnValue);
+                // reset stack pointer
+                text.emit(OpCode.ADD, Register.Arch.sp, Register.Arch.zero, Register.Arch.fp);
+                // set fp back to what it was.=
+                text.emit(OpCode.LW, Register.Arch.fp, Register.Arch.sp, 0);
+
+                return returnReg;
+
             }
             case FieldAccessExpr fieldAccessExpr -> {
                 text.emit("FieldAccess Expression");
@@ -211,8 +265,26 @@ public class ExprCodeGen extends CodeGen {
                 return v1;
             }
             case AddressOfExpr addressOfExpr -> {
+                // todo: look into whether this should return value or address
+                text.emit("Start of address of Expr");
+                Register address = (new AddrCodeGen(asmProg)).visit(addressOfExpr.expr);
+                Register v1 = Register.Virtual.create();
+                text.emit(OpCode.LW, v1, address, 0);
+                return v1;
             }
             case ChrLiteral chrLiteral -> {
+                Register v1 = Register.Virtual.create();
+                Label label = Label.create("char");
+                asmProg.sections.get(0).emit(label);
+                asmProg.sections.get(0).emit(new Directive("byte " + "\'" + chrLiteral.chrLiteral + "\'"));
+                // pad the space
+                // this means arrays will have to deal with chrliterals differently
+                asmProg.sections.get(0).emit(new Directive("space 3"));
+                text.emit("Load char adress from label into variable");
+                text.emit(OpCode.LA, v1, label);
+                text.emit("Load byte into register and return");
+                text.emit(OpCode.LB, v1, v1, 0);
+                return v1;
             }
             case StrLiteral strLiteral -> {
                 // should create a label here
@@ -235,7 +307,9 @@ public class ExprCodeGen extends CodeGen {
                 return res;
             }
             case ValueAtExpr valueAtExpr -> {
+                return visit(valueAtExpr.expr);
             }
+
         }
         return null;
     }
@@ -284,4 +358,40 @@ public class ExprCodeGen extends CodeGen {
 
     }
 
+    // Pushes a list of parameters to a function call by iteratively calling PushSingleParam
+    private int PushParams(AssemblyProgram.Section text, FunCallExpr fc,  int start){
+        // start will be top of params  == fd.callSize
+        for(int index = 0; index< fc.fd.params.size(); index++){
+            int size = getSize(fc.fd.params.get(index).type);
+            Register addrReg = (new AddrCodeGen(asmProg)).visit(fc.exprs.get(index));
+            int local = IsLocal(fc.exprs.get(index));
+
+            PushSingleParam(text, start, size, addrReg, local);
+
+            //update start by subtracting size
+            start = start - size;
+        }
+        // start at this point should be start of return value
+        return start;
+    }
+
+    // Pushes word by word one parameter of a function call
+    private void PushSingleParam(AssemblyProgram.Section text, int start, int size, Register addrReg, int local){
+        text.emit("Pushing parameter onto stack");
+        // i will act as a word counter
+        // all params will be alligned to word boundaries
+        Register v1 = Register.Virtual.create();
+        for(int i = 0; i<size%4; i++){
+            // get value from addrReg at offset i*4
+            // local will be negative if on stack and positive if from global address
+            text.emit(OpCode.LW, v1, addrReg, i*4 * local);
+            text.emit(OpCode.SW, v1, Register.Arch.sp, start - (i*4));
+        }
+        text.emit("Parameter Pushed onto stack");
+    }
+
+    private void PushReturnValue(AssemblyProgram.Section text){
+        text.emit("PushReturnValue starts here");
+        text.emit(OpCode.SW, Register.Arch.ra, Register.Arch.sp, 4);
+    }
 }

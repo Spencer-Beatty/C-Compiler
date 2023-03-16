@@ -2,6 +2,8 @@ package gen;
 
 import ast.*;
 import gen.asm.AssemblyProgram;
+import gen.asm.Label;
+import gen.asm.OpCode;
 
 /**
  * This visitor should produce a program.
@@ -24,6 +26,7 @@ public class ProgramCodeGen extends CodeGen {
 
         // idea: make text section here, each function named after themselves
         asmProg.newSection(AssemblyProgram.Section.Type.TEXT);
+        asmProg.getCurrentSection().emit(OpCode.J, Label.get("main"));
         // no need to visit other things because memalloc deals with them.
         // generate the code for each function
         p.decls.forEach((d) -> {

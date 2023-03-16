@@ -99,7 +99,7 @@ public class MemAllocCodeGen extends CodeGen {
                 }
                 // callSize will be the amount to move the stack pointer down before calling the function;
                 //
-                fd.callSize = offset + 4;
+                fd.callSize = offset;
                 this.global = false;
                 this.fpOffset = -4; // skips the frame pointer
                 // should this be 4 or -4 ?
@@ -110,6 +110,7 @@ public class MemAllocCodeGen extends CodeGen {
                 //frame pointer should be set back to what it was
                 System.out.println("fpOffset after leaving function: " + fpOffset);
                 // reset frame pointer after function
+                fd.declSize = fpOffset; //
             }
             case Block bd ->{
                 bd.vds.forEach((innerVarDecl) -> {
