@@ -61,6 +61,8 @@ public class FunCodeGen extends CodeGen {
         • restore the frame pointer from the stack
          */
 
+
+        text.emit(fd.endLabel);
         // pop registers
         text.emit(OpCode.POP_REGISTERS);
         // restore stack pointer
@@ -68,6 +70,10 @@ public class FunCodeGen extends CodeGen {
         text.emit(OpCode.ADD, Register.Arch.sp, Register.Arch.zero, Register.Arch.fp);
         // restore frame pointer from the stack
         text.emit(OpCode.LW, Register.Arch.fp, Register.Arch.sp, 0);
+
+        if(!fd.name.equals("main")){
+            asmProg.getCurrentSection().emit(OpCode.JR, Register.Arch.ra);
+        }
 
     }
 

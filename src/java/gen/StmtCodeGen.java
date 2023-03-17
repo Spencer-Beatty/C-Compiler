@@ -24,16 +24,23 @@ public class StmtCodeGen extends CodeGen {
             // To complete other cases
             case Return aReturn -> {
                 // should pop registers just after return
-                if(aReturn.expr != null){
+                if(aReturn.fd.type == BaseType.VOID){
+                    // do nothing
+                    asmProg.getCurrentSection().emit(OpCode.J, aReturn.fd.endLabel);
+                }
+                else if (aReturn.expr != null){
                     asmProg.getCurrentSection().emit("Evaluating address of return value");
                     Register regValue = (new ExprCodeGen(asmProg)).visit(aReturn.expr);
                     // push value into a
                     asmProg.getCurrentSection().emit("Transfering Value into stack");
                     //for(int i = aReturn.fd.returnValFpOffset; i>4; i++){
-                    asmProg.getCurrentSection().emit(OpCode.SW, regValue, Register.Arch.sp, aReturn.fd.returnValFpOffset);
+                    asmProg.getCurrentSection().emit(OpCode.SW, regValue, Register.Arch.fp, aReturn.fd.returnValFpOffset);
                     //}
+                    //asmProg.getCurrentSection().emit(OpCode.JR, Register.Arch.ra);
                 }
-                asmProg.getCurrentSection().emit(OpCode.JR, Register.Arch.ra);
+                asmProg.getCurrentSection().emit(OpCode.J, aReturn.fd.endLabel);
+
+
             }
             case ExprStmt exprStmt -> {
                 ExprCodeGen ecg = new ExprCodeGen(asmProg);

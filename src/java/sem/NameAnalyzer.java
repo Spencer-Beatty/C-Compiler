@@ -44,10 +44,13 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 						// to the new scope
 						// right at the start.
 						ArrayList<VarDecl> a = new ArrayList<>();
+						ArrayList<VarDecl> b = new ArrayList<>();
+						b.addAll(fd.block.vds);
 						a.addAll(fd.params);
 						a.addAll(fd.block.vds);
 						fd.block.vds = a;
 						visit(fd.block);
+						fd.block.vds = b;
 						current.function = null;
 					}
 					// not null means declared within scope

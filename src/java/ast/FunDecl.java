@@ -2,6 +2,7 @@ package ast;
 
 import java.util.ArrayList;
 import java.util.List;
+import gen.asm.Label;
 
 public final class FunDecl extends Decl {
     public final List<VarDecl> params;
@@ -9,6 +10,7 @@ public final class FunDecl extends Decl {
     public int returnValFpOffset;
     public int callSize;
     public int declSize;
+    public Label endLabel;
 
 
     public FunDecl(Type type, String name, List<VarDecl> params, Block block) {

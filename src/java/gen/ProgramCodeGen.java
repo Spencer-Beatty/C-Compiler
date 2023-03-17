@@ -4,6 +4,7 @@ import ast.*;
 import gen.asm.AssemblyProgram;
 import gen.asm.Label;
 import gen.asm.OpCode;
+import gen.asm.Register;
 
 /**
  * This visitor should produce a program.
@@ -32,8 +33,12 @@ public class ProgramCodeGen extends CodeGen {
         p.decls.forEach((d) -> {
             switch(d) {
                 case FunDecl fd -> {
+                    Label endLabel = Label.create(fd.name + "_EndLabel");
+                    fd.endLabel = endLabel;
                     FunCodeGen fcg = new FunCodeGen(asmProg);
                     fcg.visit(fd);
+
+
                 }
                 default -> {}// nothing to do
             }});

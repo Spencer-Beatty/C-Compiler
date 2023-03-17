@@ -59,6 +59,6 @@ public abstract class CodeGen {
             }
             case default ->{}
         }
-        throw new IllegalArgumentException("bad argument expression not of correct type");
+        return -1;
     }
 }

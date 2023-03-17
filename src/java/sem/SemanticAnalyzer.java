@@ -10,9 +10,9 @@ public class SemanticAnalyzer {
 		na.visit(prog);
 		errors += na.getErrorCount();
 
-		ReturnCheckAnalyzer rc = new ReturnCheckAnalyzer();
-		rc.visit(prog);
-		errors += rc.getErrorCount();
+		//ReturnCheckAnalyzer rc = new ReturnCheckAnalyzer();
+		//rc.visit(prog);
+		//errors += rc.getErrorCount();
 
 		StructFieldAnalyzer st = new StructFieldAnalyzer();
 		st.visit(prog);

@@ -153,8 +153,12 @@ public class ExprCodeGen extends CodeGen {
                 }else{
                     // deal with stack
                     text.emit("Loading word from the stack");
-                    text.emit(OpCode.LW,v1,Register.Arch.fp,varExpr.vd.fpOffset);
 
+                    if(varExpr.type == BaseType.CHAR){
+                        text.emit(OpCode.LB,v1,Register.Arch.fp,varExpr.vd.fpOffset);
+                    }else{
+                        text.emit(OpCode.LW,v1,Register.Arch.fp,varExpr.vd.fpOffset);
+                    }
                 }
                 return v1;
 
@@ -209,9 +213,34 @@ public class ExprCodeGen extends CodeGen {
                         text.emit(OpCode.SYSCALL);
                         return null;
                     }
-                    case "print_c" ->{ return null;}
-                    case "read_c" ->{ return null;}
-                    case "read_i" ->{return null;}
+                    case "print_c" ->{
+                        // prints char c
+                        text.emit("Function call print_c");
+
+                        Register res = visit(funCallExpr.exprs.get(0));
+                        text.emit(OpCode.ADD, Register.Arch.a0, Register.Arch.zero, res);
+                        text.emit(OpCode.LI, Register.Arch.v0, 11);
+                        text.emit(OpCode.SYSCALL);
+                        return null;
+                    }
+                    case "read_c" ->{
+                        // read character is syscall 12
+                        text.emit("Function call read_c");
+                        Register res = Register.Virtual.create();
+                        text.emit(OpCode.LI, Register.Arch.v0, 12);
+                        text.emit(OpCode.SYSCALL);
+                        text.emit(OpCode.ADDI, res, Register.Arch.v0, 0);
+                        return res;
+                    }
+                    case "read_i" ->{
+                        //read int is syscall 5
+                        text.emit("Function call read_i");
+                        Register res = Register.Virtual.create();
+                        text.emit(OpCode.LI, Register.Arch.v0, 5);
+                        text.emit(OpCode.SYSCALL);
+                        text.emit(OpCode.ADDI, res, Register.Arch.v0, 0);
+                        return res;
+                    }
                     case "mcmalloc" ->{return null;}
                 }
                 // case where not predefined
@@ -252,7 +281,7 @@ public class ExprCodeGen extends CodeGen {
                 // reset stack pointer
                 text.emit(OpCode.ADD, Register.Arch.sp, Register.Arch.zero, Register.Arch.fp);
                 // set fp back to what it was.=
-                text.emit(OpCode.LW, Register.Arch.fp, Register.Arch.sp, 0);
+                //text.emit(OpCode.LW, Register.Arch.fp, Register.Arch.sp, 0);
 
                 return returnReg;
 
@@ -363,10 +392,10 @@ public class ExprCodeGen extends CodeGen {
         // start will be top of params  == fd.callSize
         for(int index = 0; index< fc.fd.params.size(); index++){
             int size = getSize(fc.fd.params.get(index).type);
-            Register addrReg = (new AddrCodeGen(asmProg)).visit(fc.exprs.get(index));
+            Register valReg = visit(fc.exprs.get(index));
             int local = IsLocal(fc.exprs.get(index));
 
-            PushSingleParam(text, start, size, addrReg, local);
+            PushSingleParam(text, start, size, valReg, local);
 
             //update start by subtracting size
             start = start - size;
@@ -376,16 +405,27 @@ public class ExprCodeGen extends CodeGen {
     }
 
     // Pushes word by word one parameter of a function call
-    private void PushSingleParam(AssemblyProgram.Section text, int start, int size, Register addrReg, int local){
+    private void PushSingleParam(AssemblyProgram.Section text, int start, int size, Register valReg, int local){
         text.emit("Pushing parameter onto stack");
         // i will act as a word counter
         // all params will be alligned to word boundaries
-        Register v1 = Register.Virtual.create();
-        for(int i = 0; i<size%4; i++){
-            // get value from addrReg at offset i*4
-            // local will be negative if on stack and positive if from global address
-            text.emit(OpCode.LW, v1, addrReg, i*4 * local);
-            text.emit(OpCode.SW, v1, Register.Arch.sp, start - (i*4));
+        if(size == 1){
+            //char
+            text.emit(OpCode.SB, valReg, Register.Arch.sp, start);
+        }else if(size == 4){
+            // int
+            text.emit("Pushing word to stack");
+            text.emit(OpCode.SW, valReg, Register.Arch.sp, start);
+        }else{
+            // struct or array
+            // in this case valReg will hold addresss
+            Register v1 = Register.Virtual.create();
+            for(int i = 0; i<size%4; i++){
+                // get value from addrReg at offset i*4
+                // local will be negative if on stack and positive if from global address
+                text.emit(OpCode.LW, v1, valReg, i*4 * local);
+                text.emit(OpCode.SW, v1, Register.Arch.sp, start - (i*4));
+            }
         }
         text.emit("Parameter Pushed onto stack");
     }
