@@ -128,3 +128,15 @@ int foo(int a     /* stack allocated */) {
 ``` 
 
 > **Important:** Variable-to-register promotion is *optional.* We will not evaluate this part of the assignment. We simply recommend it as a debugging tool.
+
+
+
+## New Files
+
+* `gen.regalloc.GraphColouringRegAlloc.java` is the new class you should implement.
+
+
+## Updated Files
+
+* `Main.java` has been updated to provide a new commandline argument to call the graph colouring register allocator.
+
