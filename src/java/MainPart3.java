@@ -1,12 +1,11 @@
 import ast.ASTPrinter;
 import ast.Program;
 import gen.CodeGenerator;
+import gen.asm.AssemblyPass;
 import lexer.Scanner;
 import lexer.Token;
 import lexer.Tokeniser;
 import parser.Parser;
-import gen.asm.AssemblyPass;
-import regalloc.GraphColouringRegAlloc;
 import regalloc.NaiveRegAlloc;
 import sem.SemanticAnalyzer;
 
@@ -18,7 +17,7 @@ import java.io.PrintWriter;
 /**
  * This is the entry point to the compiler. This files should not be modified.
  */
-public class Main {
+public class MainPart3 {
     private static final int FILE_NOT_FOUND = 2;
     private static final int MODE_FAIL      = 254;
     private static final int LEXER_FAIL     = 250;
@@ -31,12 +30,12 @@ public class Main {
     }
 
     private enum RegAllocMode {
-        NONE, NAIVE, GRAPH_COLOURING
+        NONE, NAIVE
     }
 
     private static void usage() {
-        System.out.println("Usage: java "+ Main.class.getSimpleName()+" pass inputfile [outputfile]");
-        System.out.println("where pass is either: -lexer, -parser, -ast, -sem, -gen [naive|colour]");
+        System.out.println("Usage: java "+ MainPart3.class.getSimpleName()+" pass inputfile [outputfile]");
+        System.out.println("where pass is either: -lexer, -parser, -ast, -sem, -gen [naive]");
         System.out.println("if -ast or -gen is chosen, the output file must be specified");
         System.exit(-1);
     }
@@ -78,9 +77,6 @@ public class Main {
                 ensureArgExists(args, curArgCnt);
                 if (args[curArgCnt].equals("naive")) {
                     regAllocMode = RegAllocMode.NAIVE;
-                    curArgCnt++;
-                } else if (args[curArgCnt].equals("colour")) {
-                    regAllocMode = RegAllocMode.GRAPH_COLOURING;
                     curArgCnt++;
                 }
                 break;
@@ -175,9 +171,6 @@ public class Main {
                     break;
                 case NAIVE:
                     regAlloc = NaiveRegAlloc.INSTANCE;
-                    break;
-                case GRAPH_COLOURING:
-                    regAlloc = GraphColouringRegAlloc.INSTANCE;
                     break;
             }
             CodeGenerator codegen = new CodeGenerator(regAlloc);
