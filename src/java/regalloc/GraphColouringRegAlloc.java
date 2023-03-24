@@ -12,6 +12,9 @@ public class GraphColouringRegAlloc implements AssemblyPass {
     public AssemblyProgram apply(AssemblyProgram program) {
 
         AssemblyProgram newProg = new AssemblyProgram();
+        ControlFlowGraph cg = new ControlFlowGraph();
+        cg.CreateControlFlowGraph(program);
+        cg.Display();
 
         // To complete
 
