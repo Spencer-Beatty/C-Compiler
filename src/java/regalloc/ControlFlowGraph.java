@@ -7,14 +7,18 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 public class ControlFlowGraph {
-    private List<ControlFlowNode> functionStartNodes;
+    public List<ControlFlowNode> functionStartNodes;
+    public List<ArrayList<ControlFlowNode>> sortedArrays;
+    public int totalLineCounter;
     public ControlFlowGraph(){
         functionStartNodes = new ArrayList<ControlFlowNode>();
+        sortedArrays = new ArrayList<ArrayList<ControlFlowNode>>();
+        totalLineCounter = 0;
     }
     public void CreateControlFlowGraph(AssemblyProgram asmProg){
-        int totalLineCounter = 0;
         ArrayList<ControlFlowNode> labelNodes = new ArrayList<ControlFlowNode>();
         for(AssemblyProgram.Section section : asmProg.sections){
             if(section.type != AssemblyProgram.Section.Type.TEXT){
@@ -27,6 +31,8 @@ public class ControlFlowGraph {
                 continue;
             }
 
+            // initialize to items.size becuause at most array will be of that size
+            ArrayList<ControlFlowNode> nodeList = new ArrayList<ControlFlowNode>(section.items.size());
             int lineNumber = 0;
             ControlFlowNode predNode = null;
             ControlFlowNode startNode = null;
@@ -89,11 +95,13 @@ public class ControlFlowGraph {
                 }
                 //System.out.print(lineNumber + ":");
                 //System.out.println(item.toString());
+                nodeList.add(predNode);
                 lineNumber ++;
                 totalLineCounter ++;
 
             }
-
+            // add node list containing all nodes in order 1-n, into sorted arrays containing functions cfgs'
+            sortedArrays.add(nodeList);
         }
 
         for(ControlFlowNode cf : functionStartNodes){
@@ -129,3 +137,4 @@ public class ControlFlowGraph {
         }
     }
 }
+

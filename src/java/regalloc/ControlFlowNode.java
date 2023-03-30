@@ -7,9 +7,13 @@ import gen.asm.Register;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ControlFlowNode {
+    private Set<Register> liveInSet;
+    private Set<Register> liveOutSet;
     public boolean displayed = false;
     public String branchLabelName;
     public int totalLineCounter;
@@ -24,6 +28,7 @@ public class ControlFlowNode {
     private List<Register> useVars; // point to original definition of decl
     private List<Register> defVars; // point to use of decl
 
+
     public ControlFlowNode(String pName, List<Register> pUseVars, List<Register> pDecVars, String pBranchLabelName){
         this.name = pName;
         this.useVars = pUseVars;
@@ -31,15 +36,64 @@ public class ControlFlowNode {
         this.pred = new ArrayList<ControlFlowNode>();
         this.desc = new ArrayList<ControlFlowNode>();
         this.branchLabelName = pBranchLabelName;
+        this.liveInSet = new HashSet<>();
+        this.liveOutSet = new HashSet<>();
     }
 
+    /**
+     * A List of Registers used at node n
+     */
     public List<Register> Use(){
         return useVars;
     }
 
+    /**
+     *
+     * A List of Registers defined at node n
+     */
     public List<Register> Def() {
         return defVars;
     }
+
+    /**
+     * Creates a list of Registers representing the Live In set
+     * or
+     * Returns current Live In set previously created
+     */
+    public Set<Register> LiveIn(){
+        liveInSet.addAll(Use());
+        Set<Register> tempLiveOutSet = new HashSet<>();
+        tempLiveOutSet.addAll(GetLiveOut());
+        tempLiveOutSet.removeAll(defVars);
+        liveInSet.addAll(tempLiveOutSet);
+        return liveInSet;
+    }
+
+    /**
+     * Creates a list of Registers representing the Live Out set
+     * or
+     * Returns current Live Out set previously created
+     */
+    public Set<Register> LiveOut(){
+        for(ControlFlowNode cf : desc){
+            liveOutSet.addAll(cf.LiveIn());
+        }
+        return liveOutSet;
+    }
+
+    /**
+     * @return previously computed live In
+     */
+    public Set<Register> GetLiveIn(){
+        return liveInSet;
+    }
+    /**
+     * @return previously computed live Out
+     */
+    public Set<Register> GetLiveOut(){
+        return liveOutSet;
+    }
+
 
     public void AddDescendent(ControlFlowNode cf){
             desc.add(cf);
@@ -51,6 +105,10 @@ public class ControlFlowNode {
 
     public void RemovePredecessor(ControlFlowNode cf){
         pred.remove(cf);
+    }
+
+    public List<ControlFlowNode> GetDesc(){
+        return desc;
     }
 
     public void DisplayInstruction(PrintWriter pw){
@@ -118,6 +176,23 @@ public class ControlFlowNode {
             current = next;
         }
         CleanNode(current, labelNodes);
+    }
+    public void DisplayNodeRegisters(){
+        System.out.print(lineNumber + ": ");
+        System.out.print("InSet :");
+        for(Register reg : liveInSet){
+            System.out.print(reg + "  ");
+        }
+        System.out.print("OutSet :");
+        for(Register reg : liveOutSet){
+            System.out.print(reg + "  ");
+        }
+        System.out.print("\n");
+        desc.forEach((child) -> {
+            if(child.lineNumber > lineNumber){
+                child.DisplayNodeRegisters();
+            }
+        });
     }
 
     private void CleanNode(ControlFlowNode current, List<ControlFlowNode> labelNodes){
