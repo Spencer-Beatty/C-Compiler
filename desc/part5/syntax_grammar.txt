@@ -1,0 +1,62 @@
+# #  comment
+# () grouping
+# [] optional
+# *  zero or more
+# +  one or more
+# |  alternative
+
+
+program    ::= (include)* (classdecl | structdecl | vardecl | fundecl)* EOF # Part V
+
+include    ::= "#include" STRING_LITERAL
+
+structdecl ::= structtype "{" (vardecl)+ "}" ";"    # structure declaration
+
+vardecl    ::= type IDENT ("[" INT_LITERAL "]")* ";" # normal declaration, (e.g. int a;), or multi-dimensional array declaration, (e.g. int a[2][5];)
+
+fundecl    ::= type IDENT "(" params ")" block    # function declaration
+
+classdecl  ::= classtype ["extends" IDENT] "{" (vardecl)* (fundecl)* "}" # Part V
+
+
+  
+type       ::= ("int" | "char" | "void" | structtype | classtype) ("*")* # Part V
+
+structtype ::= "struct" IDENT
+
+classtype  ::= "class" IDENT # Part V
+
+params     ::= [ type IDENT ("," type IDENT)* ]
+
+stmt       ::= block
+             | "while" "(" exp ")" stmt              # while loop
+             | "if" "(" exp ")" stmt ["else" stmt]   # if then else
+             | "return" [exp] ";"                    # return
+             | exp ";"                               # expression statement, e.g. a function call
+
+block      ::= "{" (vardecl)* (stmt)* "}"
+
+exp        ::= "(" exp ")"
+             | exp "=" exp                           # assignment
+             | (IDENT | INT_LITERAL)
+             | ("-" | "+") exp
+             | CHAR_LITERAL
+             | STRING_LITERAL
+             | exp (">" | "<" | ">=" | "<=" | "!=" | "==" | "+" | "-" | "/" | "*" | "%" | "||" | "&&") exp  # binary operators
+             | arrayaccess | fieldaccess | valueat | addressof | funcall | sizeof | typecast
+             | classfuncall | classInstance # Part V - class field call is similar to struct field call 
+
+
+
+classInstance::= "new" classtype"()"              # Part V - new class object instantiation
+classfuncall ::= exp "." funcall				  # Part V - class method call
+
+funcall      ::= IDENT "(" [ exp ("," exp)* ] ")" # function call
+arrayaccess  ::= exp "[" exp "]"                  # array access
+fieldaccess  ::= exp "." IDENT                    # Part V - class or structure field member access
+valueat      ::= "*" exp                          # Value at operator (pointer indirection)
+addressof    ::= "&" exp                          # Address-of operator
+sizeof       ::= "sizeof" "(" type ")"            # size of type
+typecast     ::= "(" type ")" exp                 # type casting
+
+
