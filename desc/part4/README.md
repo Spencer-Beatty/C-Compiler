@@ -43,6 +43,12 @@ For this project, it is okay to process the nodes in any order (no need to sort 
 However, if you want to ensure a faster convergence time, you should compute the LiveOut set before the LiveIn set as seen in the lecture.
 
 The output of the liveness analysis should be a liveIn and liveOut set for each node in the CFG.
+Please note that there is a corner case that you need to handle. in the case where an instruction defines a register that is never used.
+In such case, you must either:
+- remove this "dead" instruction;
+- or you must add the register defined in the liveOut set of the corresponding node (but just once at the end of calculating liveness).
+
+Without doing one of these, your allocator will produce broken code. 
 
 ## 3. Interference Graph
 
@@ -77,9 +83,10 @@ Your implementation of the algorithm should produce two results: a set of virtua
 Using these two outputs, you should then go back to the list of instructions and patch it up to replace each virtual registers with either an architectural register, or with a load/store instruction if the virtual register is spilled.
 You should also at this point expand the two pseudo-instructions `pushRegisters` and `popRegisters`.
 
-You will find it useful to reuse the existing logic from the `NaiveRegAlloc` when performing this step.
-As mentioned, you should never need more than three registers when spilling with your register allocator.
-Therefore, if you reuse some of the code from the naive reigster allocator, you should really only be using three registers and not six as the original code suggests.
+You will find it useful to reuse some of the existing logic from the `NaiveRegAlloc` when performing this step.
+As already mentioned, you should never need more than three registers when spilling with your register allocator.
+In fact, you can even do better and only use two registers, lowering the number of reserved registers for spilling.
+This will result in less load/store in case of high register pressure.
 
 
 ## Debugging Tip: Promote variables to registers
