@@ -24,12 +24,14 @@ public class ControlFlowGraph {
             if(section.type != AssemblyProgram.Section.Type.TEXT){
                 continue;
             }
-
+            //todo just have this as part
+            /*
             if(totalLineCounter == 0){
                 // skips j main
                 totalLineCounter ++;
                 continue;
             }
+            */
 
             // initialize to items.size becuause at most array will be of that size
             ArrayList<ControlFlowNode> nodeList = new ArrayList<ControlFlowNode>(section.items.size());
@@ -44,7 +46,8 @@ public class ControlFlowGraph {
                 ArrayList<Register> useRegs = new ArrayList<Register>();
                 switch (item){
                     case Directive directive ->{
-                        throw new IllegalArgumentException("Directive in .Text section");
+                        continue;
+                        //throw new IllegalArgumentException("Directive in .Text section");
                     }
                     case Comment comment -> {
                         continue;
@@ -52,12 +55,13 @@ public class ControlFlowGraph {
                     // for each branch store label in node.label information
                     case Instruction.BinaryBranch binaryBranch-> {
                         branchLabelName = binaryBranch.label.name;
+                        useRegs.addAll(binaryBranch.uses());
                     }
                     case Instruction.UnaryBranch unaryBranch->{
                         branchLabelName = unaryBranch.label.name;
                     }
                     case Instruction.Jump j->{
-                        name = "$j";
+                        name = Label.create(j.label.name).toString();
                         branchLabelName = j.label.name;
                     }
                     //
@@ -80,6 +84,7 @@ public class ControlFlowGraph {
                     startNode = new ControlFlowNode(name, useRegs, defRegs,  branchLabelName);
                     functionStartNodes.add(startNode);
                     predNode = startNode;
+
                 } else{
                     ControlFlowNode nextNode = new ControlFlowNode(name, useRegs, defRegs, branchLabelName);
                     predNode.AddDescendent(nextNode);

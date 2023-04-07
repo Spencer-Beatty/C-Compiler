@@ -15,15 +15,15 @@ public class GraphColouringRegAlloc implements AssemblyPass {
         ControlFlowGraph cfg = new ControlFlowGraph();
         cfg.CreateControlFlowGraph(program);
         // display writes control flow graph to predetermined file graph.gv
-        //cfg.Display();
+        cfg.Display();
 
         FixPointLivenessAnalysis(cfg);
 
-        //DisplayRegisters(cfg);
+        DisplayRegisters(cfg);
 
         ArrayList<Set<Register>> encountered = EncounteredRegisterSets(cfg);
         InterferenceGraph ig = new InterferenceGraph(cfg, encountered);
-        //ig.DrawGraph();
+        ig.DrawGraph();
 
         //System.out.println(ig.archMapping.size());
 
@@ -34,6 +34,9 @@ public class GraphColouringRegAlloc implements AssemblyPass {
     }
 
     private static AssemblyProgram run(AssemblyProgram prog, InterferenceGraph ig) {
+        HashSet<Register> fullArchSet = new HashSet<>(Arrays.asList(Register.Arch.ra, Register.Arch.a0,
+                Register.Arch.a1,Register.Arch.a2,Register.Arch.a3,Register.Arch.sp, Register.Arch.fp,
+                Register.Arch.v0, Register.Arch.v1, Register.Arch.zero, Register.Arch.gp));
 
         AssemblyProgram newProg = new AssemblyProgram();
         // emit labels for all virtual registers
@@ -52,7 +55,8 @@ public class GraphColouringRegAlloc implements AssemblyPass {
                 // map from virtual register to corresponding uniquely created label
 
                 final AssemblyProgram.Section newSection = newProg.newSection(AssemblyProgram.Section.Type.TEXT);
-
+                ArrayList<Register> registersUsed = new ArrayList<>();
+                ArrayList<Boolean> pushed = new ArrayList<>(Arrays.asList(false));
                 section.items.forEach((item) -> {
                     switch (item) {
                         case (Comment comment) -> newSection.emit(comment);
@@ -61,29 +65,38 @@ public class GraphColouringRegAlloc implements AssemblyPass {
                         case (Instruction insn) -> {
                             if (insn == Instruction.Nullary.pushRegisters) {
                                 newSection.emit("Original instruction: pushRegisters");
-                            /*for (Label l : vrLabels) {
+                                registersUsed.removeAll(fullArchSet);
+                                for (Register reg : registersUsed) {
                                 // load content of memory at label into $t0
-                                newSection.emit(OpCode.LA, Register.Arch.t0, l);
-                                newSection.emit(OpCode.LW, Register.Arch.t0, Register.Arch.t0, 0);
-
-                                // push $t0 onto stack
+                                if(ig.archMapping.containsKey(reg)){
+                                    reg = ig.archMapping.get(reg);
+                                }
+                                newSection.emit(OpCode.ADD, Register.Arch.t0, reg , Register.Arch.zero);
+                                    // push $t0 onto stack
                                 newSection.emit(OpCode.ADDI, Register.Arch.sp, Register.Arch.sp, -4);
                                 newSection.emit(OpCode.SW, Register.Arch.t0, Register.Arch.sp, 0);
-                            }
-                            */
+                                }
+                                pushed.set(0, true);
+                                break;
                             } else if (insn == Instruction.Nullary.popRegisters) {
                                 newSection.emit("Original instruction: popRegisters");
-                            /*
-                            for (Label l : reverseVrLabels) {
-                                // pop from stack into $t0
-                                newSection.emit(OpCode.LW, Register.Arch.t0, Register.Arch.sp, 0);
-                                newSection.emit(OpCode.ADDI, Register.Arch.sp, Register.Arch.sp, 4);
 
-                                // store content of $t0 in memory at label
-                                newSection.emit(OpCode.LA, Register.Arch.t1, l);
-                                newSection.emit(OpCode.SW, Register.Arch.t0, Register.Arch.t1, 0);
-                            }*/
+                                for (Register reg : registersUsed) {
+                                    if(ig.archMapping.containsKey(reg)){
+                                        reg = ig.archMapping.get(reg);
+                                    }
+                                    // pop from stack into $t0
+                                    newSection.emit(OpCode.LW, Register.Arch.t0, Register.Arch.sp, 0);
+                                    newSection.emit(OpCode.ADDI, Register.Arch.sp, Register.Arch.sp, 4);
+
+                                    newSection.emit(OpCode.ADD, reg, Register.Arch.t0, Register.Arch.zero);
+                                }
+                                break;
                             } else
+                                if(! pushed.get(0)){
+                                    if(insn.def()!=null && !registersUsed.contains(insn.def()))
+                                    registersUsed.add(insn.def());
+                                }
                                 emitInstructionWithoutVirtualRegister(insn, newSection, ig.archMapping, ig.virtualMapping);
                         }
                     }
@@ -235,7 +248,7 @@ public class GraphColouringRegAlloc implements AssemblyPass {
     public ArrayList<Set<Register>> EncounteredRegisterSets(ControlFlowGraph cfg){
         HashSet<Register> fullArchSet = new HashSet<>(Arrays.asList(Register.Arch.ra, Register.Arch.a0,
                 Register.Arch.a1,Register.Arch.a2,Register.Arch.a3,Register.Arch.sp, Register.Arch.fp,
-                Register.Arch.v1, Register.Arch.zero, Register.Arch.gp));
+                Register.Arch.v0, Register.Arch.v1, Register.Arch.zero, Register.Arch.gp));
 
         ArrayList<Set<Register>> encountered = new ArrayList<>();
         for(ArrayList<ControlFlowNode> nodeList : cfg.sortedArrays) {

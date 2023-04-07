@@ -196,13 +196,8 @@ public class ControlFlowNode {
     }
 
     private void CleanNode(ControlFlowNode current, List<ControlFlowNode> labelNodes){
+        // todo change_
         if(current.branchLabelName != null){
-            if(current.name.equals("$j")){
-                for(ControlFlowNode cf : current.desc){
-                    cf.RemovePredecessor(current);
-                }
-                current.desc = new ArrayList<ControlFlowNode>();
-            }
             ControlFlowNode labelNode = FindLabelNode(labelNodes, current.branchLabelName);
             current.AddDescendent(labelNode);
             labelNode.AddPredecessor(current);

@@ -32,13 +32,13 @@ public class InterferenceMatrix {
     }
 
     public void AddEdge(Register r1, Register r2){
-        try{
-            int i = indexHashMap.get(r1);
-            int j = indexHashMap.get(r2);
+        int i;
+        int j;
+        if(indexHashMap.containsKey(r1) && indexHashMap.containsKey(r2)){
+            i = indexHashMap.get(r1);
+            j = indexHashMap.get(r2);
             adjMatrix[i][j] = 1;
             adjMatrix[j][i] = 1;
-        }catch (Exception e){
-            System.out.println(e);
         }
     }
 
