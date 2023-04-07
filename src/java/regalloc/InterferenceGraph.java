@@ -36,7 +36,8 @@ public class InterferenceGraph {
         }
 
         for(InterferenceMatrix mat : interferenceMatrices){
-            archMapping = ChaitansAlgorithm(mat);
+            archMapping = new HashMap<>();
+            archMapping.putAll(ChaitansAlgorithm(mat));
         }
     }
 
