@@ -183,7 +183,5 @@ public class InterferenceGraph {
     }
 
 
-    public void AssignRegisters(AssemblyProgram asmProg){
 
-    }
 }
