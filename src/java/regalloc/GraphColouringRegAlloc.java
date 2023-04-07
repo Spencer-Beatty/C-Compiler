@@ -15,17 +15,17 @@ public class GraphColouringRegAlloc implements AssemblyPass {
         ControlFlowGraph cfg = new ControlFlowGraph();
         cfg.CreateControlFlowGraph(program);
         // display writes control flow graph to predetermined file graph.gv
-        cfg.Display();
+        //cfg.Display();
 
         FixPointLivenessAnalysis(cfg);
 
-        DisplayRegisters(cfg);
+        //DisplayRegisters(cfg);
 
         ArrayList<Set<Register>> encountered = EncounteredRegisterSets(cfg);
         InterferenceGraph ig = new InterferenceGraph(cfg, encountered);
-        ig.DrawGraph();
+        //ig.DrawGraph();
 
-        System.out.println(ig.archMapping.size());
+        //System.out.println(ig.archMapping.size());
 
 
 
