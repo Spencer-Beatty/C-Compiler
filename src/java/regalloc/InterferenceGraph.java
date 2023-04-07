@@ -34,9 +34,8 @@ public class InterferenceGraph {
             UpdateEdgeMatrix(mat);
             interferenceMatrices.add(mat);
         }
-
+        archMapping = new HashMap<>();
         for(InterferenceMatrix mat : interferenceMatrices){
-            archMapping = new HashMap<>();
             archMapping.putAll(ChaitansAlgorithm(mat));
         }
     }
