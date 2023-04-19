@@ -247,11 +247,14 @@ We will not mark based on the AST printer; however, modifying your AST printer t
 
 ## 9. Type Analysis
 
-Class declarations have been symbolized as `ClassDecl` in the AST earlier. You must make sure each declared class has a unique name in your type analyzer. Then, you must ensure that when facing a class function call, or field access, the function or field exists in the corresponding class declaration or its parents. This note is the essential part of object-oriented programming language type checking, in which you must have to check all ancestors of a class while analyzing field access or function call.
+Class declarations are represented as `ClassDecl` in the AST.
+You must make sure each declared class has a unique name in your type analyzer.
+Then, you must ensure that for each class function call, or field access, the function or field exists in the corresponding class declaration or its parents.
+This is an essential part of object-oriented programming language type checking, in which you must have to check all ancestors of a class while analyzing field access or function call.
 
-Typing rules are updated based on Class types and can be accessed [here](./typing-rules/rules.pdf). All new or updated rules are written in red. Like before, you are responsible for extending `sem.TypeCheckVisitor` to follow newly-added rules. Please take special care of the necessary directives mentioned below to provide a fully-functioning type-checker.
-
- The `<:` operator in typing inference rule indicates subtyping, meaning that T<sub>1</sub> corresponding class is a descendant of T<sub>2</sub> corresponding one.
+The typing rules have been updated and can be accessed [here](./typing-rules/rules.pdf). All new or updated rules are written in red.
+Note that the `<:` operator in a typing inference rule indicates subtyping.
+For instance T<sub>1</sub>`<:`T<sub>2</sub> means that the class type T<sub>1</sub> is a descendant of the class type T<sub>2</sub>.
 
 
 #### Checking lvalues:
