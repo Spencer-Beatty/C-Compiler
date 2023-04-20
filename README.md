@@ -9,7 +9,7 @@ We encourage you to regularly check this repository for changes.
 2. [Part 2 (ast builder + semantic analyser)](desc/part2): Friday, 24 February 2023 at 5pm, weight = 20%
 3. [Part 3 (code generator)](desc/part3): Friday, 17 March 2023, at 5pm, weight = 20%
 4. [Part 4 (register allocator)](desc/part4): Friday 7 April 2023, at 5pm, weight = 20%
-5. Part 5 (object-oriented features): Friday 28 April 2023, at 5pm, weight = 20%
+5. [Part 5 (object-oriented features)](desc/part5): Friday 28 April 2023, at 5pm, weight = 20%
 
 Specific instructions for each part can be found above by clicking on the part name.
 
