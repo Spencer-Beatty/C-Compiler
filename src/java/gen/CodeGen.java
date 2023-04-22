@@ -38,6 +38,7 @@ public abstract class CodeGen {
             case PointerType pointerType -> {
                 size = 4;
             }
+            default -> throw new IllegalStateException("Unexpected value: " + type);
         }
         return size;
 

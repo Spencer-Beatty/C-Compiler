@@ -88,6 +88,7 @@ public class AddrCodeGen extends CodeGen {
             }
             case TypecastExpr typecastExpr -> null;
 
+            default -> throw new IllegalStateException("Unexpected value: " + e);
         };
 
 

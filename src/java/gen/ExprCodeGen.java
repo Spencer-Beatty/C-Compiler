@@ -339,8 +339,9 @@ public class ExprCodeGen extends CodeGen {
                 return visit(valueAtExpr.expr);
             }
 
+            default -> throw new IllegalStateException("Unexpected value: " + e);
         }
-        return null;
+
     }
     private Register StructAssign2(AssemblyProgram.Section text, Assign assign, StructType structType){
         text.emit("Get Addresses of Struct Variables");

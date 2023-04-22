@@ -111,6 +111,7 @@ public class Tokeniser {
             //types: int, void, char
             //keywords: if, else, while, return,
             // struct, sizeof
+            // class, extends, new
             StringBuilder sb = new StringBuilder();
             sb.append(c);
             switch (c) {
@@ -190,6 +191,28 @@ public class Tokeniser {
                                 }
                             }
                         }
+                    }else if(c == 'l') {
+                        c = scanner.next();
+                        sb.append(c);
+                        c = scanner.peek();
+                        if(c == 'a'){
+                            c = scanner.next();
+                            sb.append(c);
+                            c = scanner.peek();
+                            if(c == 's'){
+                                c = scanner.next();
+                                sb.append(c);
+                                c = scanner.peek();
+                                if(c == 's'){
+                                    c = scanner.next();
+                                    sb.append(c);
+                                    c = scanner.peek();
+                                    if (! Character.isLetterOrDigit(c)) {
+                                        return new Token(TokenClass.CLASS, line, column);
+                                    }
+                                }
+                            }
+                        }
                     }
                     return finishIdentifier(line, column, sb);
                 case 'e':
@@ -209,6 +232,38 @@ public class Tokeniser {
                                 c = scanner.peek();
                                 if (! Character.isLetterOrDigit(c)) {
                                     return new Token(TokenClass.ELSE, line, column);
+                                }
+                            }
+                        }
+                    }else if(c == 'x') {
+                        c = scanner.next();
+                        sb.append(c);
+                        c = scanner.peek();
+                        if(c == 't'){
+                            c = scanner.next();
+                            sb.append(c);
+                            c = scanner.peek();
+                            if(c == 'e'){
+                                c = scanner.next();
+                                sb.append(c);
+                                c = scanner.peek();
+                                if(c == 'n'){
+                                    c = scanner.next();
+                                    sb.append(c);
+                                    c = scanner.peek();
+                                    if(c == 'd'){
+                                        c = scanner.next();
+                                        sb.append(c);
+                                        c = scanner.peek();
+                                        if(c == 's'){
+                                            c = scanner.next();
+                                            sb.append(c);
+                                            c = scanner.peek();
+                                            if (! Character.isLetterOrDigit(c)) {
+                                                return new Token(TokenClass.EXTENDS, line, column);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -336,7 +391,23 @@ public class Tokeniser {
                     }
                     return finishIdentifier(line, column, sb);
 
+                case 'n':
+                    c = scanner.peek();
+                    if(c == 'e'){
+                        c = scanner.next();
+                        sb.append(c);
+                        c = scanner.peek();
+                        if(c == 'w'){
+                            c = scanner.next();
+                            sb.append(c);
+                            c = scanner.peek();
+                            if (!Character.isLetterOrDigit(c)) {
+                                return new Token(TokenClass.NEW, line, column);
+                            }
+                        }
 
+                    }
+                    return finishIdentifier(line, column, sb);
                 default:
 
                     return finishIdentifier(line, column, sb);

@@ -127,9 +127,17 @@ public class Parser {
         parseIncludes();
 
         List<Decl> decls = new ArrayList<>();
-        // (structdecl | vardecl | fundecl)*
-        while (accept(TokenClass.STRUCT, TokenClass.INT, TokenClass.CHAR, TokenClass.VOID)) {
+        // (structdecl | vardecl | fundecl | classdecl)*
+        while (accept(TokenClass.STRUCT, TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.CLASS)) {
             // structdecl
+            if(token.tokenClass == TokenClass.CLASS){
+                if(lookAhead(1).tokenClass == TokenClass.IDENTIFIER){
+                    decls.add(parseClassDecl());
+                }else{
+                    error(TokenClass.CLASS);
+                }
+            }
+
             if (token.tokenClass == TokenClass.STRUCT &&
                     lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
                     lookAhead(2).tokenClass == TokenClass.LBRA) {
@@ -159,7 +167,51 @@ public class Parser {
         expect(TokenClass.EOF);
         return new Program(decls);
     }
+    private ClassType parseClassType(){
+        if(accept(TokenClass.CLASS)){
+            nextToken();
+            String classType = token.data;
+            expect(TokenClass.IDENTIFIER);
+            return new ClassType(classType);
+        }else{
+            error(TokenClass.CLASS);
+            nextToken();
+        }
+        return null;
+    }
 
+    private ClassDecl parseClassDecl(){
+        //classtype ["extends" IDENT] "{" (vardecl)* (fundecl)* "}"
+        //todo add in extends
+        ClassType c = parseClassType();
+        // extends goes here
+        ArrayList<VarDecl> varDecls = new ArrayList<>();
+        ArrayList<FunDecl> funDecls = new ArrayList<>();
+        expect(TokenClass.LBRA);
+        boolean doneVarDecl = false;
+        while(accept(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT, TokenClass.CLASS)){
+            if(doneVarDecl){
+                funDecls.add(parseFunDecl());
+            }else{
+                // case of int a() or int a;
+                if(accept(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID)){
+                    if(lookAhead(1).tokenClass == TokenClass.IDENTIFIER && lookAhead(2).tokenClass == TokenClass.LPAR){
+                        doneVarDecl = true;
+                        continue;
+                    }
+                }else{ // of type struct t a() or class t a() or struct t a; or class t a;
+                    if(lookAhead(2).tokenClass == TokenClass.IDENTIFIER && lookAhead(3).tokenClass == TokenClass.LPAR){
+                        // function is made
+                        doneVarDecl = true;
+                        continue;
+                    }
+                }
+                varDecls.add(parseVarDecl());
+            }
+        }
+        expect(TokenClass.RBRA);
+        return new ClassDecl(c, null, varDecls, funDecls);
+    }
     // includes are ignored, so does not need to return an AST node
     private void parseIncludes() {
         if (accept(TokenClass.INCLUDE)) {
@@ -191,10 +243,9 @@ public class Parser {
             ArrayList<VarDecl> vds = new ArrayList<>();
 
             expect(TokenClass.LBRA);
-
-            if (accept(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT)) {
+            if (accept(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT, TokenClass.CLASS)) {
                 vds.add(parseVarDecl());
-                while (accept(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT)) {
+                while (accept(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT, TokenClass.CLASS)) {
                     vds.add(parseVarDecl());
                 }
             } else {
@@ -289,8 +340,10 @@ public class Parser {
             nextToken();
         } else if (accept(TokenClass.STRUCT)) {
             type = parseStructType();
-        } else {
-            error(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT);
+        } else if(accept(TokenClass.CLASS)) {
+            type = parseClassType();
+        }else {
+            error(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT, TokenClass.CLASS);
             nextToken(); // need to consusme otherwise get stuck in loop potentially
             return null;
         }
@@ -315,7 +368,7 @@ public class Parser {
         if (accept(TokenClass.LBRA)) {
             nextToken();
             // if starts with type then must be a var decl
-            while (accept(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT)) {
+            while (accept(TokenClass.INT, TokenClass.CHAR, TokenClass.VOID, TokenClass.STRUCT, TokenClass.CLASS)) {
                 vds.add(parseVarDecl());
             }
 
@@ -385,8 +438,17 @@ public class Parser {
         // parse or should move the token forward or return an error
         if (accept(TokenClass.ASSIGN)) {
             nextToken();
-            Expr rhs = parseAssign();
-            return new Assign(lhs, rhs);
+            if (accept(TokenClass.NEW)){
+                // a = new class comp();
+                nextToken();
+                ClassType type = parseClassType();
+                expect(TokenClass.LPAR);
+                expect(TokenClass.RPAR);
+                return new ClassInstantiationExpr(type);
+            }else{
+                Expr rhs = parseAssign();
+                return new Assign(lhs, rhs);
+            }
         } else {
             return lhs;
         }
@@ -554,9 +616,25 @@ public class Parser {
                 if (token.tokenClass == TokenClass.DOT) {
                     nextToken();
                     if (accept(TokenClass.IDENTIFIER)) {
+                        // check if ()
                         String field = token.data;
+                        ArrayList<Expr> exprs = new ArrayList<>();
                         nextToken();
-                        lhs = new FieldAccessExpr(lhs, field);
+                        if (token.tokenClass ==TokenClass.LPAR ) {
+                            // skip a ( expr* )
+                            nextToken();
+                            if (!accept(TokenClass.RPAR)) {
+                                exprs.add(parseExpr());
+                                while (!accept(TokenClass.RPAR, TokenClass.EOF)) {
+                                    expect(TokenClass.COMMA);
+                                    exprs.add(parseExpr());
+                                }
+                            }
+                            nextToken();
+                            lhs = new ClassFunCallExpr(lhs, new FunCallExpr(field, exprs));
+                        }else{
+                            lhs = new FieldAccessExpr(lhs, field);
+                        }
                     }
                 } else if (token.tokenClass == TokenClass.LSBR) {
                     nextToken();

@@ -223,6 +223,7 @@ public class ASTPrinter {
                 visit(pointerType.type);
                 writer.print(")");
             }
+            default -> throw new IllegalStateException("Unexpected value: " + node);
         }
 
     }
