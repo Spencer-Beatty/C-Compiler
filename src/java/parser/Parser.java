@@ -137,12 +137,11 @@ public class Parser {
                     error(TokenClass.CLASS);
                 }
             }
-
-            if (token.tokenClass == TokenClass.STRUCT &&
+            else if (token.tokenClass == TokenClass.STRUCT &&
                     lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
                     lookAhead(2).tokenClass == TokenClass.LBRA) {
                 decls.add(parseStructDecl());
-
+                //continue;
             }
             // fundecl where type != struct
             else if (lookAhead(1).tokenClass == TokenClass.IDENTIFIER &&
@@ -182,9 +181,15 @@ public class Parser {
 
     private ClassDecl parseClassDecl(){
         //classtype ["extends" IDENT] "{" (vardecl)* (fundecl)* "}"
-        //todo add in extends
+
         ClassType c = parseClassType();
+        String parentClass = null;
         // extends goes here
+        if(token.tokenClass == TokenClass.EXTENDS){
+            nextToken();
+            parentClass = token.data;
+            expect(TokenClass.IDENTIFIER);
+        }
         ArrayList<VarDecl> varDecls = new ArrayList<>();
         ArrayList<FunDecl> funDecls = new ArrayList<>();
         expect(TokenClass.LBRA);
@@ -210,7 +215,12 @@ public class Parser {
             }
         }
         expect(TokenClass.RBRA);
-        return new ClassDecl(c, null, varDecls, funDecls);
+        if(parentClass == null){
+            return new ClassDecl(c, null, varDecls, funDecls);
+        }else{
+            return new ClassDecl(c, new ClassType(parentClass), varDecls, funDecls);
+        }
+
     }
     // includes are ignored, so does not need to return an AST node
     private void parseIncludes() {
@@ -326,7 +336,6 @@ public class Parser {
         return new VarDecl(type, name);
 
     }
-
 
     private Type parseType() {
         Type type;
@@ -444,7 +453,7 @@ public class Parser {
                 ClassType type = parseClassType();
                 expect(TokenClass.LPAR);
                 expect(TokenClass.RPAR);
-                return new ClassInstantiationExpr(type);
+                return new Assign(lhs, new ClassInstantiationExpr(type));
             }else{
                 Expr rhs = parseAssign();
                 return new Assign(lhs, rhs);
