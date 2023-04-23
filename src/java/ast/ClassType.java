@@ -1,16 +1,20 @@
 package ast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class ClassType implements Type {
     //ClassType	::= String
-    String className;
+    public String className;
+    public ClassDecl classDecl;
+    public boolean intantiated = false;
     public ClassType(String pClassName){
         this.className = pClassName;
     }
 
     @Override
     public List<ASTNode> children() {
-        return null;
+
+        return new ArrayList<ASTNode>();
     }
 }

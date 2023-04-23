@@ -223,7 +223,36 @@ public class ASTPrinter {
                 visit(pointerType.type);
                 writer.print(")");
             }
-            default -> throw new IllegalStateException("Unexpected value: " + node);
+            case ClassType classType ->{
+                writer.print("ClassType(");
+                writer.print(classType.className);
+                writer.print(")");
+            }
+            case ClassInstantiationExpr classInstantiationExpr -> {
+                writer.print("ClassInstantiationExpr(") ;
+            visit(classInstantiationExpr.classType);
+                writer.print(")");
+            }
+            case ClassDecl classDecl -> {
+                writer.print("ClassDecl(");
+                if(classDecl.parent != null){
+                    writer.print("Parent(" + classDecl.parent.className + ")");
+                }
+                for( VarDecl i : classDecl.varDecls){
+                    visit(i);
+                    writer.print(",");
+                }
+                for( FunDecl i : classDecl.funDecls){
+                    visit(i);
+                    writer.print(",");
+                }
+            }
+            case ClassFunCallExpr classFunCallExpr -> {
+                writer.print("ClassFunCallExpr(");
+                visit(classFunCallExpr.expr);
+                visit(classFunCallExpr.funCallExpr);
+                writer.print(")");
+            }
         }
 
     }

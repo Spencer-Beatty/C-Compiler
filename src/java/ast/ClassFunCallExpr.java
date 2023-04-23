@@ -5,8 +5,8 @@ import java.util.List;
 
 public final class ClassFunCallExpr extends Expr {
 
-    Expr expr;
-    FunCallExpr funCallExpr;
+    public Expr expr;
+    public FunCallExpr funCallExpr;
     public ClassFunCallExpr(Expr e, FunCallExpr fe){
         this.expr = e;
         this.funCallExpr = fe;

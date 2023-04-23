@@ -2,6 +2,8 @@ package sem;
 
 import ast.*;
 
+import java.util.ArrayList;
+
 public class TypeAnalyzer extends BaseSemanticAnalyzer {
 
 	private boolean CompareType(Type t1, Type t2){
@@ -42,6 +44,19 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 					}
 					case StructType st2 -> {
 						return st.name.equals(st2.name);
+					}
+					case default ->{
+						return false;
+					}
+				}
+			}
+			case ClassType ct ->{
+				switch (t2){
+					case null -> {
+						return false;
+					}
+					case ClassType ct2 ->{
+						return ct.className.equals(ct2.className);
 					}
 					case default ->{
 						return false;
@@ -249,6 +264,14 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 							yield BaseType.UNKNOWN;
 						}
 						// Struct type st should be unique
+					}case ClassType ct ->{
+						for(VarDecl vd : ct.classDecl.varDecls){
+							if(f.field.equals(vd.name)){
+								yield(vd.type);
+							}
+						}
+						error("Field " + f.field + " does not exist within class " + ct.className);
+						yield BaseType.UNKNOWN;
 					}
 					case default -> {
 						error("field access expression not of type struct type");
@@ -325,15 +348,12 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				// make sure that lhs is lval
 				Type t1 = visit(a.expr1);
 				Type t2 = visit(a.expr2);
-				if(t1 == BaseType.VOID || t2 == BaseType.VOID){
+
+				if(t1 == BaseType.VOID || t2 == BaseType.VOID || t1 == null || t2 == null){
 					error("unknown");
 					yield BaseType.UNKNOWN;
 				}
 				switch (t1) {
-					case null -> {
-						error("unknown");
-						yield BaseType.UNKNOWN;
-					}
 					case ArrayType at ->{
 						error("unknown");
 						yield BaseType.UNKNOWN;
@@ -434,12 +454,40 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				yield visit(e.expr);
 			}
 
-			default -> {
+			//---------------
+			// Class
+			//---------------
+
+			/*default -> {
 				error("unknown ast node");
 				yield BaseType.UNKNOWN; // or unknown?
+			}*/
+
+			case ClassDecl classDecl -> {
+				yield BaseType.NONE;
 			}
+			case ClassFunCallExpr classFunCallExpr -> {
+				Type type = visit(classFunCallExpr.expr);
+				try{
+					ClassType ct = ((ClassType) type);
+					for(FunDecl fd : ct.classDecl.getAllFunDecl()){
+						if(classFunCallExpr.funCallExpr.name.equals(fd.name)){
+							yield fd.type;
+						}
+					}
 
+					error("FunCall not defined in classdecl funcall");
+					yield BaseType.UNKNOWN;
 
+				}catch(Exception e){
+					error("ClassFunCallExpr expr of wrong type");
+					yield BaseType.UNKNOWN;
+				}
+
+			}
+			case ClassInstantiationExpr classInstantiationExpr -> {
+				yield classInstantiationExpr.classType;
+			}
 		};
 
 	}

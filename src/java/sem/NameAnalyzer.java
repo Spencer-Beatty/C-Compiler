@@ -78,33 +78,34 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 					// is ok if struct
 					error("Variable already declared within scope");
 				}else{
+					//this is for the variable occurs in the scope
 					current.put(new VarSymbol(vd));
-
 					// if struct have to link up struct decl
 					switch (vd.type) {
 						case StructType st -> {
 							Symbol sym2 = current.lookup(st.name);
 							if(sym2!=null){
 								// struct is defined
-								switch (sym2) {
-									case VarSymbol var -> {
-										switch(var.vd.type){
-											case null -> {}
-											case StructType st2 -> {
-												st.fields = st2.fields;
-											}
-											default -> {
-												error("Struct not previously defined");
-											}
-										}
-									}
-									default -> {
+								try {
+									st.fields = ((StructType) ((VarSymbol) sym2).vd.type).fields;
+								}catch(Exception e){
 										error("Struct not previously defined");
-									}
 								}
 							}else{
 								error("Struct not previously defined");
 								// struct not defined
+							}
+						}
+						case ClassType ct -> {
+							Symbol sym2 = current.lookup(ct.className);
+							if(sym2!=null){
+								try {
+									ct.classDecl = ((ClassSymbol) sym2).cd;
+								}catch(Exception e){
+									error("Struct not previously defined");
+								}
+							}else{
+								error("Class not previously defined");
 							}
 						}
 						default -> {}
@@ -167,9 +168,6 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 				}
 
 			}
-
-
-
 
 			case (FunCallExpr fc) -> {
 				Symbol sym = current.lookup(fc.name);
@@ -264,6 +262,61 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 				// must happen in type analysis
 
 			}
+			case ClassDecl cd -> {
+				Symbol sym = current.lookup(cd.name);
+
+
+				if(sym == null){
+					Symbol parent;
+					if(cd.parent!= null){
+						// this call should error if parent class does not exist
+						visit(cd.parent);
+						ArrayList<String> varNames = new ArrayList<>();
+						cd.varDecls.forEach((child) ->{
+							varNames.add(child.name);
+						});
+						for(VarDecl vd : cd.parent.classDecl.getAllVarDecl()) {
+							if(varNames.contains(vd.name)){
+								error("VarDecl " + vd.name + " previously defined within parent class " + cd.parent.className);
+							}
+						}
+					}
+					// means class is not defined
+					current.put(new ClassSymbol(cd));
+					visit(cd.classType);
+
+				}else{
+					error("Class previous defined within scope");
+				}
+			}
+			case ClassInstantiationExpr ci -> {
+				// check if class exists
+				// set boolean in variable that class has been assigned.
+				Symbol sym = current.lookup(ci.classType.className);
+				if(sym != null){
+					try{
+						ClassDecl classDecl = ((ClassSymbol) sym).cd;
+					}catch(Exception e){
+						error("Class instantiation class not defined");
+					}
+				}else{
+					error("Class" + ci.classType.className + " not previously defined");
+				}
+			}
+			case ClassFunCallExpr cr -> {
+				visit(cr.expr);
+
+				//visit(cr.funCallExpr);
+			}
+			case ClassType ct ->{//todo
+				Symbol sym = current.lookup(ct.className);
+				if(sym != null){
+					ct.classDecl = ((ClassSymbol) sym).cd;
+				}else{
+					error("Class name ct not previosuly defined");
+				}
+
+			}
 			case StructType st ->{
 				Symbol sym = current.lookup(st.name);
 				switch (sym){
@@ -284,6 +337,7 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 
 
 			}
+
 			case (Type t) -> {
 				// deal with struct expression linking to struct;
 				// check for struct type? think more about this
