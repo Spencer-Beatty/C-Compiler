@@ -257,6 +257,7 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 			case FieldAccessExpr fieldAccessExpr -> {
 				visit(fieldAccessExpr.expr);
 
+
 				// check if field actually exists
 				// no way to reach the structure
 				// must happen in type analysis
@@ -281,6 +282,27 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 							}
 						}
 					}
+					cd.varDecls.forEach((child) -> {
+								switch (child.type) {
+									case null -> {
+									}
+									case ClassType ct -> {
+										try {
+											Symbol classSym = current.lookup(ct.className);
+											if (classSym != null) {
+												ct.classDecl = ((ClassSymbol) classSym).cd;
+											} else {
+												error("field of classtype not defined before class decl");
+											}
+										} catch (Exception e) {
+											error("Trouble casting class decl fields");
+										}
+
+									}
+									default -> {
+									}
+								}
+					});
 					// means class is not defined
 					current.put(new ClassSymbol(cd));
 					visit(cd.classType);

@@ -309,7 +309,6 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				yield BaseType.INT;
 			}
 			case (TypecastExpr t) -> {
-
 				Type t1 = visit(t.expr);
 				if (t1 == BaseType.CHAR) {
 					//char to int

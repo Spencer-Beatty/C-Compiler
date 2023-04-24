@@ -586,7 +586,8 @@ public class Parser {
                 lookAhead(1).tokenClass == TokenClass.INT ||
                 lookAhead(1).tokenClass == TokenClass.CHAR ||
                 lookAhead(1).tokenClass == TokenClass.STRUCT ||
-                lookAhead(1).tokenClass == TokenClass.VOID
+                lookAhead(1).tokenClass == TokenClass.VOID ||
+                lookAhead(1).tokenClass == TokenClass.CLASS
         ) {
             nextToken();
             Type type = parseType();
