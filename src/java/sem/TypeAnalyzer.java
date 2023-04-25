@@ -346,6 +346,7 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 								ancestor = true;
 								break;
 							}
+							ct = ct.classDecl.parent;
 						}
 						if(!ancestor){
 							error("cast is of incorrect type");
