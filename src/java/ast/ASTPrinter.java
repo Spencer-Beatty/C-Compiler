@@ -144,7 +144,7 @@ public class ASTPrinter {
             }
             case TypecastExpr typecastExpr -> {
                 writer.print("TypecastExpr(");
-                visit(typecastExpr.type);
+                visit(typecastExpr.castType);
                 writer.print(",");
                 visit(typecastExpr.expr);
                 writer.print(")");

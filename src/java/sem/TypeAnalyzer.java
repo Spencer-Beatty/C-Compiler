@@ -327,12 +327,12 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						yield BaseType.UNKNOWN;
 					}
 					case ArrayType ar -> {
-						Type p1 = new PointerType(t.castType, 1);
+						Type p1 = t.castType;
 						t.type = p1;
 						yield p1;
 					}
 					case PointerType pt -> {
-						Type p1 = new PointerType(t.castType, 1);
+						Type p1 = t.castType;
 						t.type = p1;
 						yield p1;
 					}
