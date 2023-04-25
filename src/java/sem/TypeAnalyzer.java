@@ -312,7 +312,7 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 				Type t1 = visit(t.expr);
 				if (t1 == BaseType.CHAR) {
 					//char to int
-					if(t.type == BaseType.INT){
+					if(t.castType == BaseType.INT){
 						t.type = BaseType.INT;
 						yield BaseType.INT;
 					}else{
@@ -327,14 +327,30 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						yield BaseType.UNKNOWN;
 					}
 					case ArrayType ar -> {
-						Type p1 = new PointerType(ar.type, 1);
+						Type p1 = new PointerType(t.castType, 1);
 						t.type = p1;
 						yield p1;
 					}
 					case PointerType pt -> {
-						Type p1 = new PointerType(pt.type, 1);
+						Type p1 = new PointerType(t.castType, 1);
 						t.type = p1;
 						yield p1;
+					}
+					case ClassType classType -> {
+						boolean ancestor = false;
+						ClassType ct = classType;
+						while(ct.classDecl.parent != null){
+							if(CompareType(ct.classDecl.parent,t.castType)){
+								ancestor = true;
+								break;
+							}
+						}
+						if(!ancestor){
+							error("cast is of incorrect type");
+							yield BaseType.UNKNOWN;
+						}
+						t.type = t.castType;
+						yield t.type;
 					}
 					default -> {
 						error("didnt find type to cast to");

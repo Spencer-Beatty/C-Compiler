@@ -303,6 +303,9 @@ public class NameAnalyzer extends BaseSemanticAnalyzer {
 									}
 								}
 					});
+					//todo
+					//for each method, link up variables to definitions
+
 					// means class is not defined
 					current.put(new ClassSymbol(cd));
 					visit(cd.classType);

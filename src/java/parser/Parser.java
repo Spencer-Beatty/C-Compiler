@@ -447,17 +447,9 @@ public class Parser {
         // parse or should move the token forward or return an error
         if (accept(TokenClass.ASSIGN)) {
             nextToken();
-            if (accept(TokenClass.NEW)){
-                // a = new class comp();
-                nextToken();
-                ClassType type = parseClassType();
-                expect(TokenClass.LPAR);
-                expect(TokenClass.RPAR);
-                return new Assign(lhs, new ClassInstantiationExpr(type));
-            }else{
-                Expr rhs = parseAssign();
-                return new Assign(lhs, rhs);
-            }
+            Expr rhs = parseAssign();
+            return new Assign(lhs, rhs);
+
         } else {
             return lhs;
         }
@@ -583,11 +575,11 @@ public class Parser {
             // parse pre again because of *(*(*(a)))
             return new AddressOfExpr(rhs);
         } else if (token.tokenClass == TokenClass.LPAR &&
-                lookAhead(1).tokenClass == TokenClass.INT ||
+                (lookAhead(1).tokenClass == TokenClass.INT ||
                 lookAhead(1).tokenClass == TokenClass.CHAR ||
                 lookAhead(1).tokenClass == TokenClass.STRUCT ||
                 lookAhead(1).tokenClass == TokenClass.VOID ||
-                lookAhead(1).tokenClass == TokenClass.CLASS
+                lookAhead(1).tokenClass == TokenClass.CLASS)
         ) {
             nextToken();
             Type type = parseType();
@@ -607,6 +599,13 @@ public class Parser {
             Expr zero = new IntLiteral(0);
             rhs = parsePre();
             return new BinOp(zero, Op.SUB, rhs);
+        } else if(token.tokenClass == TokenClass.NEW) {
+                // new class comp();
+                nextToken();
+                ClassType type = parseClassType();
+                expect(TokenClass.LPAR);
+                expect(TokenClass.RPAR);
+                return new ClassInstantiationExpr(type);
         }
         // rejected by the accept
         rhs = parseAttribute();
