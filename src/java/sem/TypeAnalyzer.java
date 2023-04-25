@@ -264,8 +264,9 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 							yield BaseType.UNKNOWN;
 						}
 						// Struct type st should be unique
-					}case ClassType ct ->{
-						for(VarDecl vd : ct.classDecl.varDecls){
+					}
+					case ClassType ct ->{
+						for(VarDecl vd : ct.classDecl.getAllVarDecl()){
 							if(f.field.equals(vd.name)){
 								yield(vd.type);
 							}
@@ -273,6 +274,7 @@ public class TypeAnalyzer extends BaseSemanticAnalyzer {
 						error("Field " + f.field + " does not exist within class " + ct.className);
 						yield BaseType.UNKNOWN;
 					}
+
 					case default -> {
 						error("field access expression not of type struct type");
 						yield BaseType.UNKNOWN;
